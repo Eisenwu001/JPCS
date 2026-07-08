@@ -1,0 +1,391 @@
+/* css/sidebar.css
+   Two genuinely different behaviors depending on screen width, not one
+   pattern stretched to fit both:
+   - Desktop/tablet (min-width: 769px): a persistent icon rail, expandable
+     to full width via the chevron in its header. Never fully hides.
+   - Mobile (max-width: 768px): the original hidden overlay drawer,
+     off-canvas by default, slides in over a dimmed backdrop when the
+     hamburger is tapped. Untouched from before, on purpose. */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--color-sidebar-bg);
+  color: var(--color-sidebar-text);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  box-shadow: var(--shadow-md);
+  overflow: hidden; /* clips labels during the rail<->expanded width transition */
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 16, 13, 0.45);
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-smooth);
+}
+
+.sidebar-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  height: var(--topbar-height);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.sidebar-brand .brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: white;
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+
+.sidebar-close-btn,
+.sidebar-rail-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-sidebar-text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-close-btn:hover,
+.sidebar-rail-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.sidebar-close-btn i,
+.sidebar-close-btn svg,
+.sidebar-rail-toggle i,
+.sidebar-rail-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-nav {
+  position: relative;
+  flex: 1;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Signature detail: a single pill that slides between nav items instead
+   of each item toggling its own background, closer to Linear's sidebar
+   than a plain :hover/.active swap. Left/right are edge-relative, so it
+   automatically fits both the rail and expanded widths with no JS. */
+.nav-indicator {
+  position: absolute;
+  top: 0;
+  left: var(--space-3);
+  right: var(--space-3);
+  height: 40px;
+  background: rgba(234, 88, 12, 0.16);
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-smooth), opacity var(--transition-fast);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  height: 40px;
+  border-radius: var(--radius-sm);
+  color: var(--color-sidebar-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 1;
+  transition: color var(--transition-fast);
+}
+
+.nav-item:hover {
+  color: white;
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.nav-item.active {
+  color: var(--color-sidebar-active);
+}
+
+.nav-item i,
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.nav-item span {
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+
+.sidebar-footer {
+  padding: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 150ms ease;
+  flex-shrink: 0;
+}
+
+.sidebar-footer .footer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.sidebar-footer .footer-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-footer .footer-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.sidebar-footer .footer-role {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.sidebar-footer .footer-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.sidebar-footer .footer-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sidebar-footer .footer-action i,
+.sidebar-footer .footer-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Desktop / tablet: persistent collapsible rail ---------- */
+@media (min-width: 769px) {
+  .sidebar {
+    width: var(--sidebar-width-collapsed);
+    transition: width var(--transition-smooth);
+  }
+
+  .app-shell.sidebar-expanded .sidebar {
+    width: var(--sidebar-width);
+  }
+
+  .main-area {
+    margin-left: var(--sidebar-width-collapsed);
+    transition: margin-left var(--transition-smooth);
+  }
+
+  .app-shell.sidebar-expanded .main-area {
+    margin-left: var(--sidebar-width);
+  }
+
+  /* Rail is always visible at this width, so the dimmed backdrop and
+     the mobile close button have nothing to do here. (Hamburger button
+     hiding lives in topbar.css, next to its base rule, see that file
+     for why.) */
+  .sidebar-backdrop,
+  .sidebar-close-btn {
+    display: none;
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-brand-inner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: opacity var(--transition-fast);
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-brand-label {
+    display: none;
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-rail-toggle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-brand:hover .sidebar-brand-inner {
+    opacity: 0;
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-brand:hover .sidebar-rail-toggle {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .app-shell:not(.sidebar-expanded) .nav-item span {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-footer {
+    justify-content: center;
+    padding: var(--space-4) 0;
+  }
+
+  .app-shell:not(.sidebar-expanded) .sidebar-footer .footer-info,
+  .app-shell:not(.sidebar-expanded) .sidebar-footer .footer-action {
+    display: none !important;
+  }
+
+  .app-shell:not(.sidebar-expanded) .nav-item span {
+    display: none;
+  }
+
+  .app-shell:not(.sidebar-expanded) .nav-item {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
+
+  /* Tooltip on hover while collapsed, without it a rail with only
+     icons has no way to confirm what each one does before clicking. */
+  .app-shell:not(.sidebar-expanded) .nav-item:hover::after {
+    content: attr(data-label);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-sidebar-bg);
+    color: white;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    pointer-events: none;
+    z-index: 10;
+  }
+}
+
+/* ---------- Mobile: original hidden overlay drawer, unchanged ---------- */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-smooth);
+    will-change: transform;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .main-area {
+    margin-left: 0;
+  }
+
+  .sidebar-rail-toggle {
+    display: none;
+  }
+}

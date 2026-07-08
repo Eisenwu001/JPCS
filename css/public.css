@@ -1,0 +1,231 @@
+/* css/public.css — standalone page, no sidebar/topbar */
+
+body {
+  min-height: 100vh;
+}
+
+.public-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.public-card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.public-loading,
+.public-error {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.public-loading i,
+.public-error i {
+  width: 32px;
+  height: 32px;
+  margin-bottom: var(--space-3);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.public-event-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.public-event-meta {
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+  margin: 0 0 20px;
+}
+
+.public-fee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-accent-hover);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.payment-method-options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: var(--space-4);
+}
+
+.payment-method-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.payment-method-option input {
+  display: none;
+}
+
+.payment-method-option.selected {
+  border-color: var(--color-accent);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.payment-method-option i {
+  width: 16px;
+  height: 16px;
+}
+
+.file-upload-zone {
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.file-upload-zone:hover {
+  border-color: var(--color-accent);
+}
+
+.file-upload-zone i {
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.file-upload-zone p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.file-upload-zone.has-file {
+  border-color: var(--color-accent);
+  border-style: solid;
+}
+
+.public-success {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.public-success i {
+  width: 48px;
+  height: 48px;
+  color: var(--color-accent);
+  margin-bottom: var(--space-3);
+}
+
+.public-success h3 {
+  font-family: var(--font-display);
+  margin: 0 0 6px;
+}
+
+.public-success p {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+.public-footer {
+  margin-top: var(--space-4);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.public-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.public-status i {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.public-status-label {
+  margin: 0 0 2px;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.public-status-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.public-status-pending {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.public-status-paid {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  color: var(--color-income);
+}
+
+.public-status-rejected {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: var(--color-expense);
+}
+
+.public-status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.public-status-details > div {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.public-status-details span:first-child {
+  color: var(--color-text-secondary);
+}
+
+.public-status-details span:last-child {
+  font-weight: 500;
+}

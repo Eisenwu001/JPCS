@@ -1,0 +1,29 @@
+/* css/reports.css */
+
+@media print {
+  .sidebar,
+  .sidebar-backdrop,
+  .hamburger-btn,
+  .topbar,
+  .toast-container,
+  .reports-intro,
+  .report-controls-card {
+    display: none !important;
+  }
+
+  #reportPrintArea {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  body,
+  .page-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .card {
+    break-inside: avoid;
+  }
+}

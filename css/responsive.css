@@ -1,0 +1,148 @@
+/* css/responsive.css */
+
+/* ---------- Desktop / tablet adjustments ---------- */
+@media (min-width: 769px) {
+  .topbar {
+    padding: 0 var(--space-6) !important; /* Perfect symmetrical balance when the mobile hamburger is hidden */
+  }
+}
+
+/* ---------- Tablet & Mobile (under 1024px) ---------- */
+@media (max-width: 1024px) {
+  .balance-sparkline {
+    display: none !important;
+  }
+}
+
+/* ---------- Tablet & Mobile (under 768px) ---------- */
+@media (max-width: 768px) {
+  .sidebar {
+    width: min(var(--sidebar-width), 82vw);
+  }
+  .topbar-search {
+    display: none;
+  }
+  .topbar-org {
+    display: none;
+  }
+  
+  /* Prevent stat card numbers from colliding with absolute icon badges */
+  .stat-card {
+    padding: var(--space-3) var(--space-4) !important;
+  }
+  .stat-card .card-value {
+    font-size: 18px !important;
+    padding-right: 28px !important; /* Protects from running under the top-right icon badge */
+  }
+  .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    gap: var(--space-3) !important;
+  }
+
+  .charts-row,
+  .bottom-row {
+    grid-template-columns: 1fr;
+  }
+  .page-content {
+    padding: var(--space-4);
+  }
+  .role-badge span {
+    display: none;
+  }
+
+  /* Make page headers wrap gracefully */
+  .dashboard-header-row,
+  .page-content > section > div[style*="display:flex; justify-content:space-between"],
+  .page-content > section > div[style*="display: flex; justify-content: space-between"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-3) !important;
+    margin-bottom: var(--space-5) !important;
+  }
+  
+  /* Make header buttons and controls scale elegantly */
+  .dashboard-header-row .btn,
+  .dashboard-header-row .segmented-toggle,
+  .page-content > section > div[style*="display:flex"] .btn,
+  .page-content > section > div[style*="display:flex"] .segmented-toggle {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  /* Make segmented controls spread evenly */
+  .segmented-toggle {
+    width: 100% !important;
+  }
+  .segmented-toggle-btn {
+    flex: 1 !important;
+    text-align: center !important;
+  }
+
+  /* Make event cards wrap beautifully */
+  .card > div[style*="display:flex; justify-content:space-between; align-items:flex-start"],
+  .card > div[style*="display: flex; justify-content: space-between; align-items: flex-start"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-3) !important;
+  }
+
+  .card > div[style*="display:flex; justify-content:space-between; align-items:flex-start"] > div[style*="display:flex; align-items:center"],
+  .card > div[style*="display: flex; justify-content: space-between; align-items: flex-start"] > div[style*="display: flex; align-items: center"] {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* ---------- Small Mobile ---------- */
+@media (max-width: 640px) {
+  .report-controls-card > div {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-3) !important;
+  }
+  .report-controls-card .form-group {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .report-controls-card .form-control {
+    width: 100% !important;
+  }
+  .report-controls-card .btn {
+    width: 100% !important;
+    margin-top: var(--space-2) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .stat-card .card-value {
+    font-size: 16px !important;
+  }
+  
+  /* Optimize modals for compact viewports */
+  .modal {
+    padding: var(--space-4) !important;
+    margin: 0 var(--space-3) !important;
+    max-width: calc(100% - var(--space-6)) !important;
+  }
+  
+  /* Stack settings backup buttons */
+  #exportBtn,
+  label[class*="btn-secondary"] {
+    width: 100% !important;
+    text-align: center !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Under extremely thin screens, fallback to 1-col if they are still wrapping */
+  .stat-card .card-value {
+    font-size: 15px !important;
+  }
+}
+

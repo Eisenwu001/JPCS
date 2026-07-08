@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JPCS Treasury</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/sidebar.css" />
+<link rel="stylesheet" href="css/topbar.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<link rel="stylesheet" href="css/tables.css" />
+<link rel="stylesheet" href="css/forms.css" />
+<link rel="stylesheet" href="css/reports.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Fixed independently of .topbar so it isn't capped by the topbar's
+       own stacking context (position:sticky + z-index creates one).
+       It needs to render above the sidebar even while inside it visually. -->
+  <button class="hamburger-btn" aria-label="Open menu">
+    <i data-lucide="menu"></i>
+  </button>
+
+  <!-- ===== SIDEBAR (hidden overlay, opened via hamburger) ===== -->
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-inner">
+        <div class="brand-mark">J</div>
+        <span class="sidebar-brand-label">JPCS</span>
+      </div>
+      <button class="sidebar-close-btn" aria-label="Close menu">
+        <i data-lucide="x"></i>
+      </button>
+      <button class="sidebar-rail-toggle" aria-label="Toggle sidebar width">
+        <i data-lucide="chevrons-left"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-indicator"></div>
+      <a href="#/dashboard" class="nav-item active" data-route="#/dashboard" data-label="Dashboard">
+        <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+      </a>
+      <a href="#/members" class="nav-item" data-route="#/members" data-label="Members">
+        <i data-lucide="users"></i><span>Members</span>
+      </a>
+      <a href="#/events" class="nav-item" data-route="#/events" data-label="Events">
+        <i data-lucide="calendar"></i><span>Events</span>
+      </a>
+      <a href="#/transactions" class="nav-item" data-route="#/transactions" data-label="Transactions">
+        <i data-lucide="wallet"></i><span>Transactions</span>
+      </a>
+      <a href="#/reports" class="nav-item" data-route="#/reports" data-label="Reports">
+        <i data-lucide="bar-chart-3"></i><span>Reports</span>
+      </a>
+      <a href="#/settings" class="nav-item" data-route="#/settings" data-label="Settings">
+        <i data-lucide="settings"></i><span>Settings</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="sidebarFooter"></div>
+  </aside>
+
+  <!-- ===== MAIN AREA ===== -->
+  <div class="main-area">
+
+    <!-- ===== TOP NAV ===== -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-org">JPCS</div>
+      </div>
+
+      <div class="topbar-search">
+        <i data-lucide="search"></i>
+        <input type="text" placeholder="Search members, transactions, events..." aria-label="Global search" />
+      </div>
+
+      <div class="topbar-actions">
+        <button class="icon-btn theme-toggle" aria-label="Toggle dark mode">
+          <i data-lucide="moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== ROUTED PAGE CONTENT ===== -->
+    <main class="page-content">
+
+      <!-- DASHBOARD -->
+      <section data-route="#/dashboard" class="active">
+        <div class="dashboard-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: var(--space-3);">
+          <div>
+            <h2 style="margin: 0 0 4px;">Dashboard</h2>
+            <p style="color: var(--color-text-secondary); margin: 0; font-size: 14px;">Overview of your organization's finances.</p>
+          </div>
+          <div class="segmented-toggle" id="timeframeToggle">
+            <button type="button" class="segmented-toggle-btn active" data-range="month">This Month</button>
+            <button type="button" class="segmented-toggle-btn" data-range="year">This Year</button>
+            <button type="button" class="segmented-toggle-btn" data-range="all">All Time</button>
+          </div>
+        </div>
+
+        <div class="balance-hero card">
+          <div class="card-label">Current Balance</div>
+          <div class="card-value tabular-nums" data-stat="balance">₱0.00</div>
+          <div class="balance-hero-subtext" id="balanceHeroSubtext" style="font-size: 13px; color: rgba(255, 255, 255, 0.85); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; font-weight: 500;"></div>
+          <canvas id="balanceSparkline" class="balance-sparkline"></canvas>
+        </div>
+
+        <div class="stat-grid">
+          <div class="card stat-card">
+            <div class="stat-card-icon"><i data-lucide="arrow-down-circle"></i></div>
+            <div class="card-label">Today's Income</div>
+            <div class="card-value tabular-nums text-income" data-stat="today-income">₱0.00</div>
+            <div class="card-delta" data-delta="today-income" style="display:none;"></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-icon"><i data-lucide="arrow-up-circle"></i></div>
+            <div class="card-label">Today's Expenses</div>
+            <div class="card-value tabular-nums text-expense" data-stat="today-expense">₱0.00</div>
+            <div class="card-delta" data-delta="today-expense" style="display:none;"></div>
+          </div>
+          <div class="card stat-card" style="display: flex; flex-direction: column;">
+            <div class="stat-card-icon"><i data-lucide="hourglass"></i></div>
+            <div class="card-label">Pending Collections</div>
+            <div class="card-value tabular-nums text-info" data-stat="pending" style="margin-bottom: auto;">₱0.00</div>
+            <div class="stat-progress-bar-wrap" id="collectionsProgressWrap" style="margin-top: 12px; display: none; padding-top: 8px; border-top: 1px dashed var(--color-border-strong);">
+              <div class="stat-progress-bar-label" style="display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-secondary); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;">
+                <span>Collected Rate</span>
+                <span id="collectionsProgressPct">0%</span>
+              </div>
+              <div class="stat-progress-bar-bg" style="width: 100%; height: 5px; background: var(--color-border); border-radius: 2.5px; overflow: hidden;">
+                <div class="stat-progress-bar-fill" id="collectionsProgressFill" style="width: 0%; height: 100%; background: var(--color-info); border-radius: 2.5px; transition: width 0.4s ease;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-icon"><i data-lucide="trending-up"></i></div>
+            <div class="card-label">Monthly Income</div>
+            <div class="card-value tabular-nums text-income" data-stat="monthly-income">₱0.00</div>
+            <div class="card-delta" data-delta="monthly-income" style="display:none;"></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-icon"><i data-lucide="trending-down"></i></div>
+            <div class="card-label">Monthly Expenses</div>
+            <div class="card-value tabular-nums text-expense" data-stat="monthly-expense">₱0.00</div>
+            <div class="card-delta" data-delta="monthly-expense" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="card chart-card" style="display: flex; flex-direction: column;">
+            <div class="chart-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-4); margin-bottom: var(--space-4);">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--color-text-primary); font-family: var(--font-display);">Monthly Flow: Income vs Expense</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--color-text-secondary); font-weight: 400; line-height: 1.4;">
+                  Click on any bar or the expand icon to drill down into the daily breakdown.
+                </p>
+              </div>
+              <button class="icon-btn expand-chart-btn" aria-label="View daily breakdown" title="Click any bar (or here) to see daily detail" style="margin-top: 2px;">
+                <i data-lucide="maximize-2" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 16px; margin-bottom: 16px; font-size: 12.5px; font-weight: 500;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 14px; height: 14px; background-color: #4ac18e; border-radius: 4px; display: inline-block;"></span>
+                <span style="color: var(--color-text-secondary);">Inflows (Above Axis)</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 14px; height: 14px; background-color: #f25c5c; border-radius: 4px; display: inline-block;"></span>
+                <span style="color: var(--color-text-secondary);">Outflows (Below Axis)</span>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap" id="incomeExpenseChartWrap" style="cursor:pointer; flex: 1; min-height: 240px;"><canvas id="incomeExpenseChart"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-card-header">
+              <h3>Category Breakdown</h3>
+              <div class="segmented-toggle" id="categoryToggle">
+                <button type="button" class="segmented-toggle-btn active" data-type="income">Income</button>
+                <button type="button" class="segmented-toggle-btn" data-type="expense">Expenses</button>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap" id="categoryChartWrap"><canvas id="categoryChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="bottom-row">
+          <div class="card">
+            <div class="chart-card-header"><h3>Recent Transactions</h3></div>
+            <div class="data-table-wrap">
+              <table class="data-table" id="recentTransactionsTable">
+                <thead>
+                  <tr><th>Category</th><th>Note</th><th>Type</th><th>Date</th><th style="text-align:right;">Amount</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="chart-card-header"><h3>Quick Actions</h3></div>
+            <div class="quick-actions-panel"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rendered entirely by their respective modules -->
+      <section data-route="#/members"></section>
+      <section data-route="#/events"></section>
+      <section data-route="#/transactions"></section>
+      <section data-route="#/reports"></section>
+      <section data-route="#/settings"></section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ===== ADMIN PASSWORD MODAL (opened via Ctrl+Alt+J) ===== -->
+<div class="modal-overlay password-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Admin Access</h3>
+    </div>
+    <form class="password-modal-form">
+      <div class="form-group">
+        <label for="adminEmailInput">Email</label>
+        <input type="email" id="adminEmailInput" class="form-control" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label for="adminPasswordInput">Password</label>
+        <input type="password" id="adminPasswordInput" class="form-control" autocomplete="current-password" />
+      </div>
+      <p class="form-error password-modal-error">Incorrect password.</p>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" style="width:100%;">Sign In</button>
+      </div>
+    </form>
+    <div style="display:flex; align-items:center; gap:10px; margin:16px 0;">
+      <div style="flex:1; height:1px; background:var(--color-border);"></div>
+      <span style="font-size:12px; color:var(--color-text-secondary);">or</span>
+      <div style="flex:1; height:1px; background:var(--color-border);"></div>
+    </div>
+    <button type="button" class="btn btn-secondary google-signin-btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35 26.9 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4 5.6l6.6 5.6C41.5 35.6 44 30.2 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+    <p class="password-modal-hint">Press Ctrl + Alt + J again to exit admin mode.</p>
+  </div>
+</div>
+
+<!-- ===== MEMBER MODAL ===== -->
+<div class="modal-overlay member-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Member</h3>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <form>
+      <div class="form-group"><label for="memberNameInput">Full Name</label><input type="text" id="memberNameInput" class="form-control" required /></div>
+      <div class="form-group">
+        <label for="memberNicknameInput">Nickname (optional)</label>
+        <input type="text" id="memberNicknameInput" class="form-control" placeholder="What they'd type on the payment form" />
+      </div>
+      <div class="form-group">
+        <label for="memberOfficerRoleInput">Officer Role</label>
+        <input type="text" id="memberOfficerRoleInput" class="form-control" list="officerRoleOptions" placeholder="e.g. Treasurer, or leave blank for Member" />
+        <datalist id="officerRoleOptions">
+          <option value="President">
+          <option value="Vice President - Internal">
+          <option value="Vice President - External">
+          <option value="Secretary">
+          <option value="Treasurer">
+          <option value="Auditor">
+          <option value="Public Relations Officer">
+          <option value="Social Media Manager">
+          <option value="Sergeant-at-Arms">
+          <option value="Special Projects">
+          <option value="Membership Committee">
+        </datalist>
+      </div>
+      <div class="form-group"><label for="memberCourseInput">Course</label><input type="text" id="memberCourseInput" class="form-control" placeholder="e.g. BS Computer Science" /></div>
+      <div class="form-group"><label for="memberYearInput">Year Level</label><input type="text" id="memberYearInput" class="form-control" placeholder="e.g. 2nd Year" /></div>
+      <div class="form-group"><label for="memberContactInput">Contact</label><input type="text" id="memberContactInput" class="form-control" placeholder="Email or phone" /></div>
+      <div class="modal-actions"><button type="submit" class="btn btn-primary">Save Member</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== EVENT MODAL ===== -->
+<div class="modal-overlay event-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Event</h3>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <form>
+      <div class="form-group"><label for="eventTitleInput">Event Title</label><input type="text" id="eventTitleInput" class="form-control" required /></div>
+      <div class="form-group"><label for="eventDateInput">Date</label><input type="date" id="eventDateInput" class="form-control" required /></div>
+      <div class="form-group"><label for="eventFeeInput">Fee per Member (₱)</label><input type="number" step="0.01" min="0" id="eventFeeInput" class="form-control" required /></div>
+      <div class="form-group"><label for="eventDescInput">Description (optional)</label><input type="text" id="eventDescInput" class="form-control" /></div>
+      <div class="modal-actions"><button type="submit" class="btn btn-primary">Create Event</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== TRANSACTION MODAL ===== -->
+<div class="modal-overlay txn-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Transaction</h3>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <form>
+      <div class="form-group">
+        <label for="txnTypeInput">Type</label>
+        <select id="txnTypeInput" class="form-control">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <div class="form-group"><label for="txnCategoryInput">Category / Vendor</label><input type="text" id="txnCategoryInput" class="form-control" required /></div>
+      <div class="form-group"><label for="txnAmountInput">Amount (₱)</label><input type="number" step="0.01" min="0" id="txnAmountInput" class="form-control" required /></div>
+      <div class="form-group"><label for="txnDateInput">Date</label><input type="date" id="txnDateInput" class="form-control" /></div>
+      <div class="form-group"><label for="txnNoteInput">Note (optional)</label><input type="text" id="txnNoteInput" class="form-control" /></div>
+      <div class="modal-actions"><button type="submit" class="btn btn-primary">Save Transaction</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== QUICK EDIT TRANSACTION MODAL ===== -->
+<div class="modal-overlay edit-txn-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Transaction</h3>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <form>
+      <input type="hidden" id="editTxnIdInput" />
+      <div id="editTxnWarning" style="display:none; padding:8px 12px; background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); border-radius:8px; font-size:12px; color:#f59e0b; margin-bottom:16px;">
+        <i data-lucide="alert-triangle" style="width:14px; height:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i>
+        This transaction is automatically generated from an event payment. Editing it manually may cause discrepancy with the event status.
+      </div>
+      <div class="form-group">
+        <label for="editTxnTypeInput">Type</label>
+        <select id="editTxnTypeInput" class="form-control">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <div class="form-group"><label for="editTxnCategoryInput">Category / Vendor</label><input type="text" id="editTxnCategoryInput" class="form-control" required /></div>
+      <div class="form-group"><label for="editTxnAmountInput">Amount (₱)</label><input type="number" step="0.01" min="0" id="editTxnAmountInput" class="form-control" required /></div>
+      <div class="form-group"><label for="editTxnDateInput">Date</label><input type="date" id="editTxnDateInput" class="form-control" /></div>
+      <div class="form-group"><label for="editTxnNoteInput">Note (optional)</label><input type="text" id="editTxnNoteInput" class="form-control" /></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Update Transaction</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== EDIT BALANCE MODAL ===== -->
+<div class="modal-overlay balance-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Current Balance</h3>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <form>
+      <div class="form-group">
+        <label for="balanceInput">Current Balance (₱)</label>
+        <input type="number" step="0.01" id="balanceInput" class="form-control" required />
+      </div>
+      <p style="font-size:12.5px; color:var(--color-text-secondary); margin-top:-8px;">
+        This resets the starting balance so the ledger totals match what you enter. Every future transaction still adjusts it from here.
+      </p>
+      <div class="modal-actions"><button type="submit" class="btn btn-primary">Update Balance</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== DAILY BREAKDOWN MODAL (click/expand on Income vs Expense) ===== -->
+<div class="modal-overlay chart-detail-overlay">
+  <div class="modal" style="max-width:900px; width:95vw;">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="icon-btn" id="detailPrevMonth" aria-label="Previous month"><i data-lucide="chevron-left"></i></button>
+        <div>
+          <h3 class="modal-title" id="detailMonthLabel" style="margin:0;">Daily Breakdown</h3>
+          <p id="detailMonthTotals" style="margin:2px 0 0; font-size:12.5px; color:var(--color-text-secondary);"></p>
+        </div>
+        <button class="icon-btn" id="detailNextMonth" aria-label="Next month"><i data-lucide="chevron-right"></i></button>
+      </div>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div style="height:380px; position:relative;">
+      <canvas id="dailyDetailChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ===== IMAGE PREVIEW MODAL (proof of payment) ===== -->
+<div class="modal-overlay image-preview-overlay">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Proof of Payment</h3>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <img id="previewImage" style="width:100%; border-radius:var(--radius-sm); display:block;" alt="Proof of payment" />
+  </div>
+</div>
+
+<!-- ===== CONFIRM DIALOG (delete confirmations) ===== -->
+<div class="modal-overlay confirm-modal-overlay">
+  <div class="modal" style="max-width:360px;">
+    <p class="confirm-modal-message" style="margin:0 0 20px; font-size:14.5px;"></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary confirm-modal-no">Cancel</button>
+      <button class="btn btn-primary confirm-modal-yes" style="background:var(--color-expense);">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/vendor/lucide.min.js"></script>
+<script src="assets/vendor/chart.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

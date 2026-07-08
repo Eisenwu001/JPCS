@@ -1,0 +1,262 @@
+/* css/dashboard.css */
+
+.balance-hero {
+  background: linear-gradient(135deg, var(--color-sidebar-bg), #3a2a1c);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-6) var(--space-8);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+
+.balance-hero .card-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+
+.balance-hero .card-value {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: var(--space-1);
+  position: relative;
+  z-index: 2;
+}
+
+.balance-hero-subtext {
+  position: relative;
+  z-index: 2;
+}
+
+.balance-sparkline {
+  position: absolute;
+  top: 50%;
+  right: var(--space-8);
+  transform: translateY(-50%);
+  width: 55% !important;
+  max-width: 500px;
+  height: 75% !important;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* auto-fit means this always fills evenly, 5 across on wide screens,
+   3, 2, or 1 on narrower ones. It never leaves a dangling empty slot
+   the way a fixed 4-column grid did with 5 stat cards in it. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.stat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card-icon {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stat-card-icon i {
+  width: 14px;
+  height: 14px;
+}
+
+/* Ties each stat card's icon badge to the color of its own value, so
+   income, expense, and info figures are readable at a glance without
+   adding another markup hook. */
+.stat-card:has(.text-income) .stat-card-icon {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: transparent;
+  color: var(--color-income);
+}
+
+.stat-card:has(.text-expense) .stat-card-icon {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: transparent;
+  color: var(--color-expense);
+}
+
+.stat-card:has(.text-info) .stat-card-icon {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: transparent;
+  color: var(--color-info);
+}
+
+.card-label {
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-right: 32px; /* keeps long labels from running under the icon badge */
+}
+
+.card-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.card-delta {
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-delta i { width: 12px; height: 12px; }
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.chart-card {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chart-card-header h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.chart-canvas-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.segmented-toggle {
+  display: flex;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmented-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.segmented-toggle-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.bottom-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+}
+
+.quick-actions,
+.quick-actions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+}
+
+.quick-action-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  transform: translateX(2px);
+}
+
+.quick-action-btn .qa-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: rgba(234, 88, 12, 0.12);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .quick-action-btn:hover {
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.quick-action-btn .qa-icon i { width: 16px; height: 16px; }
+
+@media (max-width: 1024px) {
+  .charts-row, .bottom-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .balance-hero .card-value { font-size: 30px; }
+}
