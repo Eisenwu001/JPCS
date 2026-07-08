@@ -356,8 +356,10 @@ export function setStartingBalance(newBalanceCentavos) {
 }
 
 export function addMember({ name, course, yearLevel, contact, officerRole = "", nickname = "" }) {
-  state.members.push({ id: uid(), name, course, yearLevel, contact, officerRole, nickname, createdAt: todayISO() });
+  const member = { id: uid(), name, course, yearLevel, contact, officerRole, nickname, createdAt: todayISO() };
+  state.members.push(member);
   persist();
+  return member;
 }
 
 export function updateMember(id, updates) {
@@ -376,9 +378,9 @@ export function deleteMember(id) {
   persist();
 }
 
-export function addEvent({ title, date, feeCentavos, description, slug = null }) {
+export function addEvent({ title, date, feeCentavos, description, slug = null, category = "general" }) {
   const participants = state.members.map((m) => ({ memberId: m.id, paid: false }));
-  const event = { id: uid(), title, date, feeCentavos, description, participants, slug, active: true };
+  const event = { id: uid(), title, date, feeCentavos, description, participants, slug, active: true, category };
   state.events.push(event);
   persist();
   return event;

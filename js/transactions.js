@@ -15,6 +15,14 @@ export function renderTransactions() {
   const sectionEl = document.querySelector('section[data-route="#/transactions"]');
   if (!sectionEl) return;
 
+  const highlightTarget = store.get("highlightTarget");
+  if (highlightTarget && highlightTarget.type === "transaction" && highlightTarget.id) {
+    filterSearch = "";
+    filterType = "all";
+    filterCategory = "all";
+    filterSort = "newest";
+  }
+
   const data = getData();
 
   // If outer shell isn't rendered yet, render it once to preserve focus when typing
@@ -327,6 +335,19 @@ function applyFiltersAndRenderTable() {
   }
 
   if (window.lucide) window.lucide.createIcons();
+
+  // Handle highlight from global search
+  const highlightTarget = store.get("highlightTarget");
+  if (highlightTarget && highlightTarget.type === "transaction" && highlightTarget.id) {
+    const row = sectionEl.querySelector(`.txn-row[data-id="${highlightTarget.id}"]`);
+    if (row) {
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        row.classList.add("row-highlight-flash");
+        store.set("highlightTarget", null);
+      }, 150);
+    }
+  }
 }
 
 function openQuickEditFor(id) {

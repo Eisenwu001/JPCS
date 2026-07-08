@@ -7,13 +7,14 @@ import { initSidebar, initThemeToggle, initSidebarFooter } from "./sidebar.js";
 import { initAdminGate } from "./auth.js";
 import { renderDashboard, initBalanceModal, initChartDetailModal, initCategoryToggle, initTimeframeToggle } from "./dashboard.js";
 import { renderMembers, initMemberModal } from "./members.js";
-import { renderEvents, initEventModal } from "./events.js";
+import { renderEvents, initEventModal, initManagePaymentsModal } from "./events.js";
 import { renderTransactions, initTransactionModal } from "./transactions.js";
 import { renderSettings } from "./settings.js";
 import { renderReports } from "./reports.js";
 import { closeModal } from "./ui.js";
 import { initAutoSync } from "./sheets-sync.js";
 import { initCloudLedgerSync } from "./data.js";
+import { initGlobalSearch } from "./search.js";
 
 router.register("#/dashboard", () => renderDashboard());
 router.register("#/members", () => renderMembers());
@@ -36,6 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initMemberModal();
   initEventModal();
   initTransactionModal();
+  initManagePaymentsModal();
+  initGlobalSearch();
 
   const imagePreviewOverlay = document.querySelector(".image-preview-overlay");
   imagePreviewOverlay?.querySelector(".modal-close-btn")?.addEventListener("click", () => closeModal(imagePreviewOverlay));

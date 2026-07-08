@@ -39,7 +39,7 @@ export function renderMembers() {
               </td></tr>` : data.members.map((m) => {
                 const outstanding = getMemberOutstandingCentavos(m.id);
                 return `
-                <tr>
+                <tr class="member-row" data-id="${m.id}">
                   <td>${m.name}${m.nickname ? ` <span style="color:var(--color-text-secondary); font-weight:400;">(${m.nickname})</span>` : ""}</td>
                   <td>${m.officerRole ? `<span class="status-badge income">${m.officerRole}</span>` : `<span style="color:var(--color-text-secondary);">Member</span>`}</td>
                   <td>${m.course || "—"}</td>
@@ -62,6 +62,20 @@ export function renderMembers() {
   `;
 
   if (window.lucide) window.lucide.createIcons();
+
+  // Handle highlight from global search
+  const highlightTarget = store.get("highlightTarget");
+  if (highlightTarget && highlightTarget.type === "member" && highlightTarget.id) {
+    const row = sectionEl.querySelector(`.member-row[data-id="${highlightTarget.id}"]`);
+    if (row) {
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        row.classList.add("row-highlight-flash");
+        store.set("highlightTarget", null);
+      }, 150);
+    }
+  }
+
   if (!isAdmin) return;
 
   document.getElementById("addMemberBtn")?.addEventListener("click", () => openMemberModal());

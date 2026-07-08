@@ -76,13 +76,14 @@ async function slugExists(slug) {
 /** Publishes an event so its public link works. Uses the slug as the
  * Firestore document ID directly — that's what the public page looks
  * up, no separate query needed. */
-export async function publishEvent({ slug, title, description, feeCentavos, date }) {
+export async function publishEvent({ slug, title, description, feeCentavos, date, category = "general" }) {
   await setDoc(doc(db, "events", slug), {
     title,
     description: description || "",
     feeCentavos,
     date,
     active: true,
+    category,
     createdAt: serverTimestamp(),
   });
 }
