@@ -19,7 +19,7 @@
 // forever.
 
 import { GoogleAuthProvider, signInWithPopup } from "../assets/vendor/firebase.bundle.js";
-import { auth } from "./firebase.js";
+import { sheetsAuthInstance as auth } from "./firebase.js";
 import { store } from "./store.js";
 import { getData } from "./data.js";
 import { showToast } from "./ui.js";
@@ -58,9 +58,21 @@ export async function connectGoogleSheets() {
   // signed into this app before without it.
   provider.setCustomParameters({ prompt: "consent" });
 
-  const result = await signInWithPopup(auth, provider);
-  const credential = GoogleAuthProvider.credentialFromResult(result);
-  accessToken = credential?.accessToken || null;
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    accessToken = credential?.accessToken || null;
+  } catch (err) {
+    console.error("Sheets connection error:", err);
+    if (err.code === "auth/unauthorized-domain") {
+      const currentDomain = window.location.hostname;
+      throw new Error(`This domain (${currentDomain}) is not authorized in your Firebase Project. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains, and add "${currentDomain}" to the list.`);
+    }
+    if (err.code === "auth/popup-blocked") {
+      throw new Error("Google Sheets sign-in popup was blocked by your browser. Please allow popups for this site and try again.");
+    }
+    throw new Error(err.message || "Failed to authenticate with Google. Please try again.");
+  }
 
   if (!accessToken) {
     throw new Error("Google didn't grant Sheets access. Please try connecting again.");
@@ -90,6 +102,9 @@ async function sheetsApiRequest(pathAndQuery, options = {}) {
   }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
+    if (res.status === 403) {
+      throw new Error("Access denied (403). Make sure you checked/ticked the Google Sheets permission box on Google's permission consent screen when connecting!");
+    }
     throw new Error(`Sheets API error (${res.status}). ${body.slice(0, 150)}`);
   }
   // :clear and :batchUpdate return small bodies; safe to parse as JSON either way.
@@ -114,10 +129,17 @@ async function writeTab(spreadsheetId, tabName, rows) {
   // Clear the full column range first — otherwise a shrinking dataset
   // (e.g. after deleting rows) would leave stale rows behind past
   // wherever the new, shorter data ends.
-  await sheetsApiRequest(`${spreadsheetId}/values/${tabName}!A:Z:clear`, { method: "POST" });
-  await sheetsApiRequest(`${spreadsheetId}/values/${tabName}!A1?valueInputOption=RAW`, {
+  const clearRange = `${tabName}!A:Z`;
+  await sheetsApiRequest(`${spreadsheetId}/values/${encodeURIComponent(clearRange)}:clear`, { method: "POST" });
+  
+  const updateRange = `${tabName}!A1`;
+  await sheetsApiRequest(`${spreadsheetId}/values/${encodeURIComponent(updateRange)}?valueInputOption=RAW`, {
     method: "PUT",
-    body: JSON.stringify({ values: rows }),
+    body: JSON.stringify({
+      range: updateRange,
+      majorDimension: "ROWS",
+      values: rows,
+    }),
   });
 }
 

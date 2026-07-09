@@ -1,5 +1,5 @@
 import { initializeApp, getAuth, getFirestore } from "../assets/vendor/firebase.bundle.js";
-
+import appletConfig from "../firebase-applet-config.json";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVTnEFDldwK0do500CF_1T_SEglfl8tIc",
@@ -14,3 +14,18 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Secondary Firebase app utilizing platform-provisioned credentials.
+// The AI Studio environments (development and shared previews) are automatically
+// authorized on this project (emerald-sensor-grtgb), resolving the "auth/unauthorized-domain" error.
+let sheetsAuthInstance = auth;
+try {
+  if (appletConfig && appletConfig.apiKey) {
+    const appletApp = initializeApp(appletConfig, "applet-oauth-app");
+    sheetsAuthInstance = getAuth(appletApp);
+  }
+} catch (err) {
+  console.warn("Secondary applet OAuth app initialization bypassed, using default auth:", err);
+}
+
+export { sheetsAuthInstance };
