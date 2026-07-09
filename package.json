@@ -4,11 +4,14 @@
   "description": "JPCS Treasury organization finances static site",
   "type": "module",
   "scripts": {
-    "build": "echo 'Static site, no build step required'",
+    "build": "node build.js",
     "dev": "node server.js",
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   }
 }

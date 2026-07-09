@@ -4,6 +4,7 @@
 import { auth } from "./firebase.js";
 import { openPasswordModal, handleSignOut } from "./auth.js";
 import { store } from "./store.js";
+import { confirmAction } from "./ui.js";
 //   - Desktop/tablet: the sidebar is a persistent icon rail, expandable
 //     to full width via the chevron in its header. Your choice is
 //     remembered across visits.
@@ -149,7 +150,7 @@ export function initSidebarFooter() {
     const iconName = isAdmin ? "log-out" : "log-in";
 
     footerEl.innerHTML = `
-      <div class="footer-avatar" id="footerAvatar" title="${isAdmin ? 'Click to Sign Out' : 'Click to Sign In'}">${initials}</div>
+      <div class="footer-avatar" id="footerAvatar">${initials}</div>
       <div class="footer-info">
         <div class="footer-name">${name}</div>
         <div class="footer-role">${role}</div>
@@ -162,30 +163,16 @@ export function initSidebarFooter() {
     if (window.lucide) window.lucide.createIcons();
 
     // Wire up events
-    const triggerAction = () => {
+    document.getElementById("footerAuthBtn")?.addEventListener("click", async (e) => {
+      e.stopPropagation();
       if (isAdmin) {
-        handleSignOut();
+        const confirm = await confirmAction("Are you sure you want to sign out?");
+        if (confirm) {
+          handleSignOut();
+        }
       } else {
         openPasswordModal();
       }
-    };
-
-    document.getElementById("footerAuthBtn")?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      triggerAction();
     });
-
-    document.getElementById("footerAvatar")?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      triggerAction();
-    });
-
-    // Also let the entire footer be clickable to login/logout if the sidebar is collapsed
-    footerEl.onclick = (e) => {
-      const appShell = document.querySelector(".app-shell");
-      if (appShell && !appShell.classList.contains("sidebar-expanded")) {
-        triggerAction();
-      }
-    };
   });
 }

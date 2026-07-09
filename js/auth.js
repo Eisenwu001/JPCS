@@ -99,10 +99,6 @@ export function initAdminGate() {
   document.querySelector(".password-modal-overlay")?.addEventListener("click", (e) => {
     if (e.target.classList.contains("password-modal-overlay")) closePasswordModal();
   });
-
-  document.querySelector(".role-badge")?.addEventListener("click", () => {
-    if (store.get("isAdmin")) signOut(auth);
-  });
 }
 
 export function handleSignOut() {

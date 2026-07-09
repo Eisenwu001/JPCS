@@ -15,35 +15,35 @@ export function renderReports() {
 
     <div class="card report-controls-card" style="margin-bottom:16px;">
       <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-        <div class="form-group" style="margin:0;">
+        <div class="form-group" style="margin:0; width:150px; flex-shrink:0;">
           <label for="reportTypeSelect">Report Type</label>
-          <select id="reportTypeSelect" class="form-control" style="width:150px;">
+          <select id="reportTypeSelect" class="form-control">
             <option value="monthly">Monthly</option>
             <option value="semester">Semester</option>
             <option value="yearly">Yearly</option>
           </select>
         </div>
-        <div class="form-group" id="monthPickerGroup" style="margin:0;">
+        <div class="form-group" id="monthPickerGroup" style="margin:0; width:180px; flex-shrink:0;">
           <label for="monthPicker">Month</label>
           <input type="month" id="monthPicker" class="form-control" />
         </div>
-        <div class="form-group" id="semesterPickerGroup" style="margin:0; display:none;">
+        <div class="form-group" id="semesterPickerGroup" style="margin:0; display:none; width:180px; flex-shrink:0;">
           <label for="semesterSelect">Semester</label>
           <select id="semesterSelect" class="form-control">
             <option value="1">1st Sem (Aug – Dec)</option>
             <option value="2">2nd Sem (Jan – May)</option>
           </select>
         </div>
-        <div class="form-group" id="yearInputGroup" style="margin:0; display:none;">
+        <div class="form-group" id="yearInputGroup" style="margin:0; display:none; width:100px; flex-shrink:0;">
           <label for="yearInput">Year</label>
-          <input type="number" id="yearInput" class="form-control" style="width:100px;" />
+          <input type="number" id="yearInput" class="form-control" />
         </div>
-        <div class="form-group" id="semYearGroup" style="margin:0; display:none;">
+        <div class="form-group" id="semYearGroup" style="margin:0; display:none; width:100px; flex-shrink:0;">
           <label for="semYearInput">Year</label>
-          <input type="number" id="semYearInput" class="form-control" style="width:100px;" />
+          <input type="number" id="semYearInput" class="form-control" />
         </div>
-        <button class="btn btn-primary" id="generateReportBtn">Generate</button>
-        <button class="btn btn-secondary" id="printReportBtn" style="display:none;">
+        <button class="btn btn-primary" id="generateReportBtn" style="flex-shrink:0;">Generate</button>
+        <button class="btn btn-secondary" id="printReportBtn" style="display:none; flex-shrink:0;">
           <i data-lucide="printer" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i>Print / Save PDF
         </button>
       </div>
