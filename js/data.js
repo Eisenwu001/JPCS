@@ -521,7 +521,7 @@ export function getPeriodReport(startISO, endISO) {
 
 // ---------- Task Tracker ----------
 
-export function addTask({ title, description, status = "todo", priority = "medium", category = "general", dueDate = "" }) {
+export function addTask({ title, description, status = "todo", priority = "medium", category = "general", dueDate = "", startDate = "", endDate = "" }) {
   const task = {
     id: uid(),
     title,
@@ -530,6 +530,8 @@ export function addTask({ title, description, status = "todo", priority = "mediu
     priority, // "low", "medium", "high"
     category, // "general", "treasury", "event", "member"
     dueDate,
+    startDate,
+    endDate,
     createdAt: todayISO(),
     updatedAt: todayISO(),
   };

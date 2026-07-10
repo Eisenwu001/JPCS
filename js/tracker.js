@@ -76,10 +76,12 @@ export function renderTracker() {
         ${t.description ? `<p style="font-size:12.5px; color:var(--color-text-secondary); margin:0; line-height:1.4; word-break:break-word;">${t.description}</p>` : ""}
         
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-top:8px; border-top:1px dashed var(--color-border); font-size:11.5px; color:var(--color-text-secondary);">
-          <span style="display:inline-flex; align-items:center; gap:4px; font-weight:500;">
-            <i data-lucide="calendar" style="width:12px; height:12px;"></i>
-            ${t.dueDate ? t.dueDate : "No due date"}
-          </span>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="display:inline-flex; align-items:center; gap:4px; font-weight:500;">
+              <i data-lucide="calendar" style="width:12px; height:12px;"></i>
+              ${t.startDate && t.endDate ? `${t.startDate} to ${t.endDate}` : (t.startDate ? `Starts: ${t.startDate}` : (t.endDate ? `Ends: ${t.endDate}` : (t.dueDate ? `Due: ${t.dueDate}` : "No dates set")))}
+            </span>
+          </div>
           
           ${isAdmin ? `
           <div style="display:flex; gap:6px;">
@@ -272,13 +274,14 @@ export function initTaskModal() {
     const status = document.getElementById("taskStatusSelect").value;
     const priority = document.getElementById("taskPrioritySelect").value;
     const category = document.getElementById("taskCategorySelect").value;
-    const dueDate = document.getElementById("taskDueDateInput").value;
+    const startDate = document.getElementById("taskStartDateInput") ? document.getElementById("taskStartDateInput").value : "";
+    const endDate = document.getElementById("taskEndDateInput") ? document.getElementById("taskEndDateInput").value : "";
 
     if (editingTaskId) {
-      updateTask(editingTaskId, { title, description, status, priority, category, dueDate });
+      updateTask(editingTaskId, { title, description, status, priority, category, startDate, endDate });
       showToast("Task updated", "success");
     } else {
-      addTask({ title, description, status, priority, category, dueDate });
+      addTask({ title, description, status, priority, category, startDate, endDate });
       showToast("Task added", "success");
     }
 
@@ -299,7 +302,8 @@ function openTaskModal(taskId = null) {
   const statusSelect = document.getElementById("taskStatusSelect");
   const prioritySelect = document.getElementById("taskPrioritySelect");
   const categorySelect = document.getElementById("taskCategorySelect");
-  const dueDateInput = document.getElementById("taskDueDateInput");
+  const startDateInput = document.getElementById("taskStartDateInput");
+  const endDateInput = document.getElementById("taskEndDateInput");
 
   if (task) {
     titleEl.textContent = "Edit Task";
@@ -308,7 +312,8 @@ function openTaskModal(taskId = null) {
     statusSelect.value = task.status || "todo";
     prioritySelect.value = task.priority || "medium";
     categorySelect.value = task.category || "general";
-    dueDateInput.value = task.dueDate || "";
+    if (startDateInput) startDateInput.value = task.startDate || task.dueDate || "";
+    if (endDateInput) endDateInput.value = task.endDate || "";
   } else {
     titleEl.textContent = "Add Task";
     titleInput.value = "";
@@ -316,7 +321,8 @@ function openTaskModal(taskId = null) {
     statusSelect.value = "todo";
     prioritySelect.value = "medium";
     categorySelect.value = "general";
-    dueDateInput.value = "";
+    if (startDateInput) startDateInput.value = "";
+    if (endDateInput) endDateInput.value = "";
   }
 
   openModal(overlay);
