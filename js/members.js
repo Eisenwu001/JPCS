@@ -6,10 +6,104 @@ import { openModal, closeModal, confirmAction, showToast } from "./ui.js";
 
 let editingMemberId = null;
 
+function getRoleRank(role) {
+  if (!role) return 1000; // Regular members or blank role at the bottom
+  const r = role.toLowerCase().trim();
+  
+  if (r === "president") return 1;
+  if (r.startsWith("vice president") || r === "vp" || r.startsWith("vp")) return 2;
+  if (r.startsWith("secretary")) return 3;
+  if (r.startsWith("treasurer")) return 4;
+  if (r.startsWith("auditor")) return 5;
+  if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") return 6;
+  if (r.startsWith("social media manager")) return 7;
+  if (r.startsWith("sergeant-at-arms")) return 8;
+  if (r.startsWith("1st year representative") || r === "1st year rep") return 9;
+  if (r.startsWith("2nd year representative") || r === "2nd year rep") return 10;
+  if (r.startsWith("3rd year representative") || r === "3rd year rep") return 11;
+  if (r.startsWith("4th year representative") || r === "4th year rep") return 12;
+  if (r.startsWith("special projects")) return 13;
+  if (r.startsWith("membership committee")) return 14;
+  
+  // Any other officer roles
+  return 100;
+}
+
+function getOfficerBadge(role) {
+  if (!role) {
+    return `<span style="color:var(--color-text-secondary); font-size:13px; font-weight:500;">Member</span>`;
+  }
+  const r = role.toLowerCase().trim();
+  if (r === "member" || r === "regular member") {
+    return `<span style="color:var(--color-text-secondary); font-size:13px; font-weight:500;">Member</span>`;
+  }
+
+  let bg = "rgba(107, 114, 128, 0.08)";
+  let color = "var(--color-text-secondary)";
+  let border = "rgba(107, 114, 128, 0.15)";
+
+  if (r === "president") {
+    bg = "rgba(124, 58, 237, 0.1)";
+    color = "#8b5cf6"; // Purple
+    border = "rgba(124, 58, 237, 0.2)";
+  } else if (r.startsWith("vice president") || r === "vp" || r.startsWith("vp")) {
+    bg = "rgba(59, 130, 246, 0.1)";
+    color = "#3b82f6"; // Blue
+    border = "rgba(59, 130, 246, 0.2)";
+  } else if (r.startsWith("secretary")) {
+    bg = "rgba(13, 148, 136, 0.1)";
+    color = "#0d9488"; // Teal
+    border = "rgba(13, 148, 136, 0.2)";
+  } else if (r.startsWith("treasurer")) {
+    bg = "rgba(16, 185, 129, 0.1)";
+    color = "var(--color-income)"; // Green
+    border = "rgba(16, 185, 129, 0.2)";
+  } else if (r.startsWith("auditor")) {
+    bg = "rgba(245, 158, 11, 0.1)";
+    color = "#d97706"; // Amber
+    border = "rgba(245, 158, 11, 0.2)";
+  } else if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") {
+    bg = "rgba(236, 72, 153, 0.1)";
+    color = "#db2777"; // Pink
+    border = "rgba(236, 72, 153, 0.2)";
+  } else if (r.startsWith("social media manager")) {
+    bg = "rgba(219, 39, 119, 0.1)";
+    color = "#be185d"; // Pink/Rose
+    border = "rgba(219, 39, 119, 0.2)";
+  } else if (r.startsWith("sergeant-at-arms")) {
+    bg = "rgba(239, 68, 68, 0.1)";
+    color = "var(--color-expense)"; // Red
+    border = "rgba(239, 68, 68, 0.2)";
+  } else if (r.includes("representative") || r.includes("rep")) {
+    bg = "rgba(99, 102, 241, 0.1)";
+    color = "#4f46e5"; // Indigo
+    border = "rgba(99, 102, 241, 0.2)";
+  } else if (r.includes("special projects") || r.includes("membership")) {
+    bg = "rgba(244, 63, 94, 0.1)"; // Rose / Pinkish
+    color = "#f43f5e";
+    border = "rgba(244, 63, 94, 0.2)";
+  } else {
+    bg = "rgba(75, 85, 99, 0.08)";
+    color = "var(--color-text-primary)";
+    border = "rgba(75, 85, 99, 0.15)";
+  }
+
+  return `<span class="status-badge" style="background:${bg}; color:${color}; border:1px solid ${border}; font-weight:600; padding:2px 8px; border-radius:4px; font-size:12px; display:inline-block;">${role}</span>`;
+}
+
 export function renderMembers() {
   const isAdmin = store.get("isAdmin");
   const sectionEl = document.querySelector('section[data-route="#/members"]');
   const data = getData();
+
+  const sortedMembers = [...(data.members || [])].sort((a, b) => {
+    const rankA = getRoleRank(a.officerRole);
+    const rankB = getRoleRank(b.officerRole);
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+    return (a.name || "").localeCompare(b.name || "");
+  });
 
   sectionEl.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
@@ -33,15 +127,15 @@ export function renderMembers() {
             </tr>
           </thead>
           <tbody>
-            ${data.members.length === 0 ? `
+            ${sortedMembers.length === 0 ? `
               <tr><td colspan="${isAdmin ? 7 : 6}">
                 <div class="empty-state"><i data-lucide="users"></i><p>No members yet${isAdmin ? ". Add your first one." : "."}</p></div>
-              </td></tr>` : data.members.map((m) => {
+              </td></tr>` : sortedMembers.map((m) => {
                 const outstanding = getMemberOutstandingCentavos(m.id);
                 return `
                 <tr class="member-row" data-id="${m.id}">
                   <td>${m.name}${m.nickname ? ` <span style="color:var(--color-text-secondary); font-weight:400;">(${m.nickname})</span>` : ""}</td>
-                  <td>${m.officerRole ? `<span class="status-badge income">${m.officerRole}</span>` : `<span style="color:var(--color-text-secondary);">Member</span>`}</td>
+                  <td>${getOfficerBadge(m.officerRole)}</td>
                   <td>${m.course || "—"}</td>
                   <td>${m.yearLevel || "—"}</td>
                   <td>${m.contact || "—"}</td>

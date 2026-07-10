@@ -160,7 +160,6 @@ export function renderTracker() {
         <div class="column-cards">
           ${todoTasks.length === 0 ? `
             <div style="text-align:center; padding:32px 16px; color:var(--color-text-tertiary); font-size:13px;">
-              <i data-lucide="inbox" style="width:24px; height:24px; margin:0 auto 8px; stroke-width:1.5;"></i>
               No tasks to do
             </div>
           ` : todoTasks.map(renderTaskCard).join("")}
@@ -179,7 +178,6 @@ export function renderTracker() {
         <div class="column-cards">
           ${inProgressTasks.length === 0 ? `
             <div style="text-align:center; padding:32px 16px; color:var(--color-text-tertiary); font-size:13px;">
-              <i data-lucide="trending-up" style="width:24px; height:24px; margin:0 auto 8px; stroke-width:1.5;"></i>
               No active tasks
             </div>
           ` : inProgressTasks.map(renderTaskCard).join("")}
@@ -198,7 +196,6 @@ export function renderTracker() {
         <div class="column-cards">
           ${doneTasks.length === 0 ? `
             <div style="text-align:center; padding:32px 16px; color:var(--color-text-tertiary); font-size:13px;">
-              <i data-lucide="check-circle-2" style="width:24px; height:24px; margin:0 auto 8px; stroke-width:1.5;"></i>
               No completed tasks
             </div>
           ` : doneTasks.map(renderTaskCard).join("")}

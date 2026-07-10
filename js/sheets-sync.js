@@ -160,9 +160,38 @@ async function pushNow() {
     ]),
   ];
 
+  const getRoleRank = (role) => {
+    if (!role) return 1000;
+    const r = role.toLowerCase().trim();
+    if (r === "president") return 1;
+    if (r.startsWith("vice president") || r === "vp" || r.startsWith("vp")) return 2;
+    if (r.startsWith("secretary")) return 3;
+    if (r.startsWith("treasurer")) return 4;
+    if (r.startsWith("auditor")) return 5;
+    if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") return 6;
+    if (r.startsWith("social media manager")) return 7;
+    if (r.startsWith("sergeant-at-arms")) return 8;
+    if (r.startsWith("1st year representative") || r === "1st year rep") return 9;
+    if (r.startsWith("2nd year representative") || r === "2nd year rep") return 10;
+    if (r.startsWith("3rd year representative") || r === "3rd year rep") return 11;
+    if (r.startsWith("4th year representative") || r === "4th year rep") return 12;
+    if (r.startsWith("special projects")) return 13;
+    if (r.startsWith("membership committee")) return 14;
+    return 100;
+  };
+
+  const sortedMembersForSheets = [...data.members].sort((a, b) => {
+    const rankA = getRoleRank(a.officerRole);
+    const rankB = getRoleRank(b.officerRole);
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+    return (a.name || "").localeCompare(b.name || "");
+  });
+
   const memberRows = [
-    ["Name", "Course", "Year Level", "Contact"],
-    ...data.members.map((m) => [m.name, m.course || "", m.yearLevel || "", m.contact || ""]),
+    ["Name", "Officer Role", "Course", "Year Level", "Contact"],
+    ...sortedMembersForSheets.map((m) => [m.name, m.officerRole || "Member", m.course || "", m.yearLevel || "", m.contact || ""]),
   ];
 
   const taskRows = [
