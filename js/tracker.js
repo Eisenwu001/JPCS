@@ -73,7 +73,7 @@ export function renderTracker() {
         </div>
         
         <h4 style="margin:4px 0 2px; font-size:14.5px; font-weight:600; color:var(--color-text-primary); line-height:1.4;">${t.title}</h4>
-        ${t.description ? `<p style="font-size:12.5px; color:var(--color-text-secondary); margin:0; line-height:1.4; word-break:break-word;">${t.description}</p>` : ""}
+        ${t.description ? `<p style="font-size:12.5px; color:var(--color-text-secondary); margin:0; line-height:1.4; word-break:break-word; white-space:pre-wrap;">${t.description}</p>` : ""}
         
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-top:8px; border-top:1px dashed var(--color-border); font-size:11.5px; color:var(--color-text-secondary);">
           <div style="display:flex; flex-direction:column; gap:4px;">
