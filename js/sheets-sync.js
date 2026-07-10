@@ -114,7 +114,7 @@ async function sheetsApiRequest(pathAndQuery, options = {}) {
 async function ensureSheetTabsExist(spreadsheetId) {
   const meta = await sheetsApiRequest(spreadsheetId);
   const existingTitles = (meta.sheets || []).map((s) => s.properties.title);
-  const needed = ["Transactions", "Members"].filter((t) => !existingTitles.includes(t));
+  const needed = ["Transactions", "Members", "Tasks"].filter((t) => !existingTitles.includes(t));
   if (needed.length === 0) return;
 
   await sheetsApiRequest(`${spreadsheetId}:batchUpdate`, {
@@ -165,8 +165,22 @@ async function pushNow() {
     ...data.members.map((m) => [m.name, m.course || "", m.yearLevel || "", m.contact || ""]),
   ];
 
+  const taskRows = [
+    ["Title", "Description", "Status", "Priority", "Category", "Due Date", "Created Date"],
+    ...(data.tasks || []).map((t) => [
+      t.title || "",
+      t.description || "",
+      t.status || "todo",
+      t.priority || "medium",
+      t.category || "general",
+      t.dueDate || "",
+      t.createdAt || "",
+    ]),
+  ];
+
   await writeTab(spreadsheetId, "Transactions", txnRows);
   await writeTab(spreadsheetId, "Members", memberRows);
+  await writeTab(spreadsheetId, "Tasks", taskRows);
 
   store.set("sheetsLastSynced", new Date());
 }

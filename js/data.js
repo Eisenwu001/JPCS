@@ -27,15 +27,19 @@ function seedData() {
     members: [],
     events: [],
     transactions: [], // { id, type: 'income'|'expense', category, amount, date, note, source: 'manual'|'event', eventId?, memberId? }
+    tasks: [],
   };
 }
 
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : seedData();
+    const parsed = raw ? JSON.parse(raw) : seedData();
+    if (!parsed.tasks) parsed.tasks = [];
+    return parsed;
   } catch {
-    return seedData();
+    const seeded = seedData();
+    return seeded;
   }
 }
 
@@ -102,6 +106,7 @@ export function initCloudLedgerSync() {
 
     if (snap.exists()) {
       state = snap.data();
+      if (!state.tasks) state.tasks = [];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       store.set("data", state);
     } else {
@@ -512,4 +517,42 @@ export function getPeriodReport(startISO, endISO) {
     incomeByCategory,
     expenseByCategory,
   };
+}
+
+// ---------- Task Tracker ----------
+
+export function addTask({ title, description, status = "todo", priority = "medium", category = "general", dueDate = "" }) {
+  const task = {
+    id: uid(),
+    title,
+    description,
+    status, // "todo", "in_progress", "done"
+    priority, // "low", "medium", "high"
+    category, // "general", "treasury", "event", "member"
+    dueDate,
+    createdAt: todayISO(),
+    updatedAt: todayISO(),
+  };
+  if (!state.tasks) state.tasks = [];
+  state.tasks.push(task);
+  persist();
+  return task;
+}
+
+export function updateTask(id, updates) {
+  if (!state.tasks) state.tasks = [];
+  const task = state.tasks.find((t) => t.id === id);
+  if (task) {
+    Object.assign(task, updates);
+    task.updatedAt = todayISO();
+    persist();
+    return true;
+  }
+  return false;
+}
+
+export function deleteTask(id) {
+  if (!state.tasks) state.tasks = [];
+  state.tasks = state.tasks.filter((t) => t.id !== id);
+  persist();
 }

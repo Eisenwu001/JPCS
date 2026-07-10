@@ -130,3 +130,10 @@
   text-align: center;
   margin-top: var(--space-3);
 }
+
+/* Ensure native calendar/date/month picker icon is visible (white) in dark mode */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}

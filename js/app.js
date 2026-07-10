@@ -11,6 +11,7 @@ import { renderEvents, initEventModal, initManagePaymentsModal } from "./events.
 import { renderTransactions, initTransactionModal } from "./transactions.js";
 import { renderSettings } from "./settings.js";
 import { renderReports } from "./reports.js";
+import { renderTracker, initTaskModal } from "./tracker.js";
 import { closeModal } from "./ui.js";
 import { initAutoSync } from "./sheets-sync.js";
 import { initCloudLedgerSync } from "./data.js";
@@ -22,6 +23,7 @@ router.register("#/events", () => renderEvents());
 router.register("#/transactions", () => renderTransactions());
 router.register("#/settings", () => renderSettings());
 router.register("#/reports", () => renderReports());
+router.register("#/tracker", () => renderTracker());
 
 document.addEventListener("DOMContentLoaded", () => {
   initCloudLedgerSync();
@@ -38,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initEventModal();
   initTransactionModal();
   initManagePaymentsModal();
+  initTaskModal();
   initGlobalSearch();
 
   const imagePreviewOverlay = document.querySelector(".image-preview-overlay");
