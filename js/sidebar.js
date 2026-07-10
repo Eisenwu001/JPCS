@@ -93,6 +93,12 @@ export function initSidebar() {
     moveIndicatorTo(document.querySelector(".nav-item.active"));
   });
 
+  window.addEventListener("hashchange", () => {
+    setTimeout(() => {
+      moveIndicatorTo(document.querySelector(".nav-item.active"));
+    }, 50);
+  });
+
   navItems.forEach((item) => {
     item.addEventListener("click", () => {
       navItems.forEach((el) => el.classList.remove("active"));
@@ -105,7 +111,10 @@ export function initSidebar() {
     });
   });
 
-  moveIndicatorTo(document.querySelector(".nav-item.active"));
+  // Delay slightly to allow the router to set the correct active class on load
+  setTimeout(() => {
+    moveIndicatorTo(document.querySelector(".nav-item.active"));
+  }, 100);
 }
 
 export function initThemeToggle() {
