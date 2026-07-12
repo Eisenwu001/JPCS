@@ -68,27 +68,21 @@ function renderSheetsSyncSection() {
 
   return `
     <div class="card" style="margin-bottom:16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <h3 style="margin:0;">Google Sheets Sync</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0;">Google Workspace Integration</h3>
         <span class="status-badge ${connected ? "income" : "expense"}">${connected ? "Connected" : "Not Connected"}</span>
       </div>
-      <p style="font-size:13.5px; color:var(--color-text-secondary); margin:0 0 16px;">
-        Pushes your Transactions and Members tables to a Google Sheet you own,
-        automatically whenever something changes while this tab is open. This is
-        separate from your admin login. Connecting asks Google for one extra,
-        narrow permission (write access to Sheets), nothing more.
-      </p>
 
       <div class="form-group">
-        <label for="spreadsheetIdInput">Spreadsheet ID</label>
+        <label for="spreadsheetIdInput">Google Spreadsheet ID (for Sheets Sync)</label>
         <input type="text" id="spreadsheetIdInput" class="form-control" placeholder="the long ID in your Sheet's URL, between /d/ and /edit" value="${spreadsheetId || ""}" />
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         ${connected
-          ? `<button class="btn btn-secondary" id="disconnectSheetsBtn">Disconnect</button>
-             <button class="btn btn-primary" id="syncNowBtn">Sync Now</button>`
-          : `<button class="btn btn-primary" id="connectSheetsBtn">Connect Google Sheets</button>`
+          ? `<button class="btn btn-secondary" id="disconnectSheetsBtn">Disconnect Google Workspace</button>
+             <button class="btn btn-primary" id="syncNowBtn">Sync Sheets Now</button>`
+          : `<button class="btn btn-primary" id="connectSheetsBtn">Connect Google Workspace</button>`
         }
       </div>
     </div>
@@ -102,7 +96,7 @@ function wireSheetsSyncSection() {
     btn.textContent = "Connecting...";
     try {
       await connectGoogleSheets();
-      showToast("Connected to Google Sheets", "success");
+      showToast("Connected to Google Workspace", "success");
     } catch (err) {
       showToast(err.message || "Couldn't connect", "error");
     }

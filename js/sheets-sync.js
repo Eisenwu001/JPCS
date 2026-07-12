@@ -25,6 +25,7 @@ import { getData } from "./data.js";
 import { showToast } from "./ui.js";
 
 const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
+const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.send";
 const SETTINGS_KEY = "jpcs_sheets_sync_settings"; // { spreadsheetId }
 const DEBOUNCE_MS = 2500;
 
@@ -63,6 +64,7 @@ export function isConnected() {
 export async function connectGoogleSheets() {
   const provider = new GoogleAuthProvider();
   provider.addScope(SHEETS_SCOPE);
+  provider.addScope(GMAIL_SCOPE);
   // Forces Google to actually show the consent screen and hand back a
   // token with the Sheets scope, even if this Google account has
   // signed into this app before without it.
@@ -473,7 +475,7 @@ async function applySheetStyles(spreadsheetId, sheetIds, txnRowsCount, memberRow
     if (name === "Transactions") {
       colWidths = [130, 180, 260, 110, 140];
     } else if (name === "Members") {
-      colWidths = [240, 220, 110, 130, 180];
+      colWidths = [240, 220, 110, 130, 350];
     } else if (name === "Tasks") {
       colWidths = [220, 320, 130, 110, 130, 130, 130, 130];
     }
@@ -566,4 +568,55 @@ export function initAutoSync() {
       }
     }, DEBOUNCE_MS);
   });
+}
+
+/** Sends an email via the Gmail API using the active OAuth access token. */
+export async function sendGmailNotification(to, subject, htmlBody) {
+  if (!accessToken) {
+    throw new Error("Google Workspace is not connected. Connect in Settings.");
+  }
+
+  // Format RFC 2822 raw email
+  const emailContent = [
+    `To: ${to}`,
+    `Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+    "Content-Type: text/html; charset=utf-8",
+    "MIME-Version: 1.0",
+    "",
+    htmlBody
+  ].join("\r\n");
+
+  // Base64url encode
+  const base64Safe = btoa(unescape(encodeURIComponent(emailContent)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ raw: base64Safe })
+  });
+
+  if (res.status === 401) {
+    accessToken = null;
+    try {
+      localStorage.removeItem("jpcs_sheets_access_token");
+      localStorage.removeItem("jpcs_sheets_token_expires_at");
+    } catch (e) {
+      console.error("Failed to remove expired sheets access token from localStorage:", e);
+    }
+    throw new Error("Your Google Workspace connection expired. Reconnect in Settings.");
+  }
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    console.error("Gmail Send Error:", errData);
+    throw new Error(errData.error?.message || "Failed to send email via Gmail API.");
+  }
+
+  return await res.json();
 }

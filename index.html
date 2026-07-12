@@ -305,11 +305,17 @@
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0;">
+          <label>Assigned Members (optional)</label>
+          <div id="taskAssigneeContainer" class="form-control" style="height: 100px; overflow-y: auto; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically filled with checkboxes -->
+          </div>
+        </div>
+      </div>
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3); margin-bottom:var(--space-4);">
+        <div class="form-group" style="margin-bottom:0;">
           <label for="taskStartDateInput">Start Date (optional)</label>
           <input type="date" id="taskStartDateInput" class="form-control" />
         </div>
-      </div>
-      <div class="form-row" style="display:grid; grid-template-columns:1fr; margin-bottom:var(--space-4);">
         <div class="form-group" style="margin-bottom:0;">
           <label for="taskEndDateInput">End Date (optional)</label>
           <input type="date" id="taskEndDateInput" class="form-control" />

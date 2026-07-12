@@ -228,3 +228,99 @@ h2 { font-size: 22px; }
   animation: highlight-flash 3s ease-out forwards !important;
   border-radius: var(--radius-sm);
 }
+
+/* Task Board Custom Redesign Rules */
+.task-card-new {
+  position: relative;
+  border-radius: var(--radius-lg); /* 16px */
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.task-card-new:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+/* Avatar Stack styling */
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-stack-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-surface);
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-left: -8px;
+  transition: transform 0.2s ease, z-index 0.2s;
+  position: relative;
+  cursor: default;
+}
+
+.avatar-stack-item:first-child {
+  margin-left: 0;
+}
+
+.avatar-stack-item:hover {
+  transform: scale(1.15);
+  z-index: 10;
+}
+
+/* Priority & Ownership badges */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Action button icons inside cards */
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition: all 0.15s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.card-action-btn:hover {
+  background: rgba(120, 113, 108, 0.1);
+  color: var(--color-text-primary);
+}
+
+.card-action-btn.delete:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-expense);
+}
+
+.card-action-btn.notify {
+  color: var(--color-accent);
+}
+
+.card-action-btn.notify:hover {
+  background: rgba(234, 88, 12, 0.1);
+  color: var(--color-accent-hover);
+}
