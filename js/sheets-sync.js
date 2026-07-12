@@ -293,7 +293,7 @@ async function applySheetStyles(spreadsheetId, sheetIds, txnRowsCount, memberRow
     } else if (name === "Members") {
       headerBgColor = { red: 0.08, green: 0.3, blue: 0.65 }; // premium steel blue
     } else if (name === "Tasks") {
-      headerBgColor = { red: 0.9, green: 0.35, blue: 0.05 }; // JPCS branded premium warm orange
+      headerBgColor = { red: 0.92, green: 0.35, blue: 0.05 }; // JPCS branded premium warm orange (#ea580c)
     }
 
     // 3. Format header row

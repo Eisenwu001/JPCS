@@ -20,7 +20,10 @@ export const db = getFirestore(app);
 // authorized on this project (emerald-sensor-grtgb), resolving the "auth/unauthorized-domain" error.
 let sheetsAuthInstance = auth;
 try {
-  if (appletConfig && appletConfig.apiKey) {
+  const isAiStudio = window.location.hostname.includes("run.app") || 
+                     window.location.hostname.includes("webcontainer") || 
+                     window.location.hostname.includes("localhost");
+  if (isAiStudio && appletConfig && appletConfig.apiKey) {
     const appletApp = initializeApp(appletConfig, "applet-oauth-app");
     sheetsAuthInstance = getAuth(appletApp);
   }
