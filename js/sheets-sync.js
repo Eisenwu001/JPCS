@@ -195,14 +195,15 @@ async function pushNow() {
   ];
 
   const taskRows = [
-    ["Title", "Description", "Status", "Priority", "Category", "Due Date", "Created Date"],
+    ["Title", "Description", "Status", "Priority", "Category", "Start Date", "End Date", "Created Date"],
     ...(data.tasks || []).map((t) => [
       t.title || "",
       t.description || "",
       t.status || "todo",
       t.priority || "medium",
       t.category || "general",
-      t.dueDate || "",
+      t.startDate || t.dueDate || "",
+      t.endDate || "",
       t.createdAt || "",
     ]),
   ];
@@ -211,7 +212,294 @@ async function pushNow() {
   await writeTab(spreadsheetId, "Members", memberRows);
   await writeTab(spreadsheetId, "Tasks", taskRows);
 
+  // Fetch spreadsheet metadata to map sheet titles to sheetIds
+  try {
+    const meta = await sheetsApiRequest(spreadsheetId);
+    const sheetIds = {};
+    for (const s of meta.sheets || []) {
+      sheetIds[s.properties.title] = s.properties.sheetId;
+    }
+    await applySheetStyles(spreadsheetId, sheetIds, txnRows.length, memberRows.length, taskRows.length);
+  } catch (styleErr) {
+    console.error("Successfully synced data, but some formatting styles could not be applied:", styleErr);
+  }
+
   store.set("sheetsLastSynced", new Date());
+}
+
+async function applySheetStyles(spreadsheetId, sheetIds, txnRowsCount, memberRowsCount, taskRowsCount) {
+  const requests = [];
+
+  const tabConfigs = [
+    { name: "Transactions", id: sheetIds["Transactions"], rows: txnRowsCount, cols: 5 },
+    { name: "Members", id: sheetIds["Members"], rows: memberRowsCount, cols: 5 },
+    { name: "Tasks", id: sheetIds["Tasks"], rows: taskRowsCount, cols: 8 }
+  ];
+
+  for (const config of tabConfigs) {
+    const { name, id, rows, cols } = config;
+    if (id === undefined) continue;
+
+    // 1. Reset formatting of a large area first to clear leftover styles from previous syncs
+    requests.push({
+      repeatCell: {
+        range: {
+          sheetId: id,
+          startRowIndex: 0,
+          endRowIndex: Math.max(rows + 20, 100), // clear current rows plus extra buffer
+          startColumnIndex: 0,
+          endColumnIndex: cols
+        },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 1.0, green: 1.0, blue: 1.0 },
+            textFormat: {
+              bold: false,
+              fontSize: 10,
+              foregroundColor: { red: 0.15, green: 0.15, blue: 0.15 },
+              fontFamily: "Lexend"
+            },
+            horizontalAlignment: "LEFT",
+            verticalAlignment: "MIDDLE",
+            borders: {
+              top: { style: "NONE" },
+              bottom: { style: "NONE" },
+              left: { style: "NONE" },
+              right: { style: "NONE" }
+            }
+          }
+        },
+        fields: "userEnteredFormat"
+      }
+    });
+
+    // 2. Freeze the header row
+    requests.push({
+      updateSheetProperties: {
+        properties: {
+          sheetId: id,
+          gridProperties: {
+            frozenRowCount: 1
+          }
+        },
+        fields: "gridProperties.frozenRowCount"
+      }
+    });
+
+    // Determine custom theme header background color based on the tab
+    let headerBgColor = { red: 0.15, green: 0.2, blue: 0.3 }; // default slate
+    if (name === "Transactions") {
+      headerBgColor = { red: 0.05, green: 0.35, blue: 0.2 }; // beautiful deep emerald green
+    } else if (name === "Members") {
+      headerBgColor = { red: 0.08, green: 0.3, blue: 0.65 }; // premium steel blue
+    } else if (name === "Tasks") {
+      headerBgColor = { red: 0.9, green: 0.35, blue: 0.05 }; // JPCS branded premium warm orange
+    }
+
+    // 3. Format header row
+    requests.push({
+      repeatCell: {
+        range: {
+          sheetId: id,
+          startRowIndex: 0,
+          endRowIndex: 1,
+          startColumnIndex: 0,
+          endColumnIndex: cols
+        },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: headerBgColor,
+            textFormat: {
+              bold: true,
+              fontSize: 11,
+              foregroundColor: { red: 1.0, green: 1.0, blue: 1.0 },
+              fontFamily: "Lexend"
+            },
+            horizontalAlignment: "CENTER",
+            verticalAlignment: "MIDDLE"
+          }
+        },
+        fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)"
+      }
+    });
+
+    // 4. Format all data cells (clean borders and padding alignment)
+    requests.push({
+      repeatCell: {
+        range: {
+          sheetId: id,
+          startRowIndex: 1,
+          endRowIndex: rows,
+          startColumnIndex: 0,
+          endColumnIndex: cols
+        },
+        cell: {
+          userEnteredFormat: {
+            textFormat: {
+              fontSize: 10,
+              fontFamily: "Lexend"
+            },
+            verticalAlignment: "MIDDLE",
+            borders: {
+              top: { style: "SOLID", color: { red: 0.9, green: 0.9, blue: 0.9 } },
+              bottom: { style: "SOLID", color: { red: 0.9, green: 0.9, blue: 0.9 } },
+              left: { style: "SOLID", color: { red: 0.9, green: 0.9, blue: 0.9 } },
+              right: { style: "SOLID", color: { red: 0.9, green: 0.9, blue: 0.9 } }
+            }
+          }
+        },
+        fields: "userEnteredFormat(textFormat,verticalAlignment,borders)"
+      }
+    });
+
+    // 5. Apply alternating row background colors (zebra striping) for data rows
+    for (let r = 2; r < rows; r += 2) {
+      requests.push({
+        repeatCell: {
+          range: {
+            sheetId: id,
+            startRowIndex: r,
+            endRowIndex: r + 1,
+            startColumnIndex: 0,
+            endColumnIndex: cols
+          },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.97, green: 0.98, blue: 0.99 } // clean soft ice blue/gray background tint
+            }
+          },
+          fields: "userEnteredFormat.backgroundColor"
+        }
+      });
+    }
+
+    // 6. Column-specific styling
+    if (name === "Transactions") {
+      // Columns: ["Date", "Category", "Note", "Type", "Amount (₱)"]
+      // Center Date (Col 0), Category (Col 1), Type (Col 3)
+      const centerCols = [0, 1, 3];
+      for (const colIdx of centerCols) {
+        requests.push({
+          repeatCell: {
+            range: { sheetId: id, startRowIndex: 1, endRowIndex: rows, startColumnIndex: colIdx, endColumnIndex: colIdx + 1 },
+            cell: { userEnteredFormat: { horizontalAlignment: "CENTER" } },
+            fields: "userEnteredFormat.horizontalAlignment"
+          }
+        });
+      }
+      // Right align and currency format Amount (Col 4)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: id, startRowIndex: 1, endRowIndex: rows, startColumnIndex: 4, endColumnIndex: 5 },
+          cell: {
+            userEnteredFormat: {
+              horizontalAlignment: "RIGHT",
+              numberFormat: {
+                type: "CURRENCY",
+                pattern: "₱#,##0.00;(₱#,##0.00);\"-\""
+              }
+            }
+          },
+          fields: "userEnteredFormat(horizontalAlignment,numberFormat)"
+        }
+      });
+    } else if (name === "Members") {
+      // Columns: ["Name", "Officer Role", "Course", "Year Level", "Contact"]
+      // Center Course (Col 2), Year Level (Col 3)
+      const centerCols = [2, 3];
+      for (const colIdx of centerCols) {
+        requests.push({
+          repeatCell: {
+            range: { sheetId: id, startRowIndex: 1, endRowIndex: rows, startColumnIndex: colIdx, endColumnIndex: colIdx + 1 },
+            cell: { userEnteredFormat: { horizontalAlignment: "CENTER" } },
+            fields: "userEnteredFormat.horizontalAlignment"
+          }
+        });
+      }
+    } else if (name === "Tasks") {
+      // Columns: ["Title", "Description", "Status", "Priority", "Category", "Start Date", "End Date", "Created Date"]
+      // Wrap description text
+      requests.push({
+        repeatCell: {
+          range: { sheetId: id, startRowIndex: 1, endRowIndex: rows, startColumnIndex: 1, endColumnIndex: 2 },
+          cell: { userEnteredFormat: { wrapStrategy: "WRAP" } },
+          fields: "userEnteredFormat.wrapStrategy"
+        }
+      });
+      // Center aligned columns from Status to Created Date (Cols 2 to 7)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: id, startRowIndex: 1, endRowIndex: rows, startColumnIndex: 2, endColumnIndex: 8 },
+          cell: { userEnteredFormat: { horizontalAlignment: "CENTER" } },
+          fields: "userEnteredFormat.horizontalAlignment"
+        }
+      });
+    }
+
+    // 7. Explicit beautiful column sizes to guarantee perfect readable spacing without truncation
+    let colWidths = [];
+    if (name === "Transactions") {
+      colWidths = [130, 180, 260, 110, 140];
+    } else if (name === "Members") {
+      colWidths = [240, 220, 110, 130, 180];
+    } else if (name === "Tasks") {
+      colWidths = [220, 320, 130, 110, 130, 130, 130, 130];
+    }
+
+    colWidths.forEach((width, colIdx) => {
+      requests.push({
+        updateDimensionProperties: {
+          range: {
+            sheetId: id,
+            dimension: "COLUMNS",
+            startIndex: colIdx,
+            endIndex: colIdx + 1
+          },
+          properties: {
+            pixelSize: width
+          },
+          fields: "pixelSize"
+        }
+      });
+    });
+
+    // 8. Custom comfortable row heights
+    requests.push({
+      updateDimensionProperties: {
+        range: {
+          sheetId: id,
+          dimension: "ROWS",
+          startIndex: 0,
+          endIndex: 1
+        },
+        properties: {
+          pixelSize: 38
+        },
+        fields: "pixelSize"
+      }
+    });
+
+    if (rows > 1) {
+      requests.push({
+        autoResizeDimensions: {
+          dimensions: {
+            sheetId: id,
+            dimension: "ROWS",
+            startIndex: 1,
+            endIndex: rows
+          }
+        }
+      });
+    }
+  }
+
+  // Send the single batchUpdate request to apply all styles in one go!
+  if (requests.length > 0) {
+    await sheetsApiRequest(`${spreadsheetId}:batchUpdate`, {
+      method: "POST",
+      body: JSON.stringify({ requests })
+    });
+  }
 }
 
 export async function pushToSheetsNow() {
