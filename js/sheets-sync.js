@@ -28,7 +28,17 @@ const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const SETTINGS_KEY = "jpcs_sheets_sync_settings"; // { spreadsheetId }
 const DEBOUNCE_MS = 2500;
 
-let accessToken = null; // in-memory only — never persisted, since it's short-lived anyway
+// Initialize from localStorage if still valid
+let accessToken = null;
+try {
+  const storedToken = localStorage.getItem("jpcs_sheets_access_token");
+  const expiresAt = localStorage.getItem("jpcs_sheets_token_expires_at");
+  if (storedToken && expiresAt && Date.now() < parseInt(expiresAt, 10)) {
+    accessToken = storedToken;
+  }
+} catch (e) {
+  console.error("Failed to restore sheets access token from localStorage:", e);
+}
 let debounceTimer = null;
 let unsubscribeData = null;
 
@@ -62,6 +72,16 @@ export async function connectGoogleSheets() {
     const result = await signInWithPopup(auth, provider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     accessToken = credential?.accessToken || null;
+    if (accessToken) {
+      try {
+        localStorage.setItem("jpcs_sheets_access_token", accessToken);
+        // Access tokens usually expire in 1 hour. We'll set the expiration
+        // to slightly less (e.g. 3500 seconds) to be safe.
+        localStorage.setItem("jpcs_sheets_token_expires_at", (Date.now() + 3500 * 1000).toString());
+      } catch (e) {
+        console.error("Failed to save sheets access token to localStorage:", e);
+      }
+    }
   } catch (err) {
     console.error("Sheets connection error:", err);
     if (err.code === "auth/unauthorized-domain") {
@@ -82,6 +102,12 @@ export async function connectGoogleSheets() {
 
 export function disconnectGoogleSheets() {
   accessToken = null;
+  try {
+    localStorage.removeItem("jpcs_sheets_access_token");
+    localStorage.removeItem("jpcs_sheets_token_expires_at");
+  } catch (e) {
+    console.error("Failed to remove sheets access token from localStorage:", e);
+  }
 }
 
 async function sheetsApiRequest(pathAndQuery, options = {}) {
@@ -98,6 +124,12 @@ async function sheetsApiRequest(pathAndQuery, options = {}) {
 
   if (res.status === 401) {
     accessToken = null;
+    try {
+      localStorage.removeItem("jpcs_sheets_access_token");
+      localStorage.removeItem("jpcs_sheets_token_expires_at");
+    } catch (e) {
+      console.error("Failed to remove expired sheets access token from localStorage:", e);
+    }
     throw new Error("Your Google Sheets connection expired. Reconnect in Settings.");
   }
   if (!res.ok) {
