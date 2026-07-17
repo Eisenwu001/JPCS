@@ -205,12 +205,13 @@ async function pushNow() {
     if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") return 6;
     if (r.startsWith("social media manager")) return 7;
     if (r.startsWith("sergeant-at-arms")) return 8;
-    if (r.startsWith("1st year representative") || r === "1st year rep") return 9;
-    if (r.startsWith("2nd year representative") || r === "2nd year rep") return 10;
-    if (r.startsWith("3rd year representative") || r === "3rd year rep") return 11;
-    if (r.startsWith("4th year representative") || r === "4th year rep") return 12;
-    if (r.startsWith("special projects")) return 13;
-    if (r.startsWith("membership committee")) return 14;
+    if (r === "coder") return 9;
+    if (r.startsWith("special projects")) return 10;
+    if (r.startsWith("membership committee")) return 11;
+    if (r.startsWith("1st year representative") || r === "1st year rep") return 12;
+    if (r.startsWith("2nd year representative") || r === "2nd year rep") return 13;
+    if (r.startsWith("3rd year representative") || r === "3rd year rep") return 14;
+    if (r.startsWith("4th year representative") || r === "4th year rep") return 15;
     return 100;
   };
 

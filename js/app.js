@@ -12,6 +12,7 @@ import { renderTransactions, initTransactionModal } from "./transactions.js";
 import { renderSettings } from "./settings.js";
 import { renderReports } from "./reports.js";
 import { renderTracker, initTaskModal } from "./tracker.js";
+import { renderCalendar } from "./calendar.js";
 import { closeModal } from "./ui.js";
 import { initAutoSync } from "./sheets-sync.js";
 import { initCloudLedgerSync } from "./data.js";
@@ -24,6 +25,7 @@ router.register("#/transactions", () => renderTransactions());
 router.register("#/settings", () => renderSettings());
 router.register("#/reports", () => renderReports());
 router.register("#/tracker", () => renderTracker());
+router.register("#/calendar", () => renderCalendar());
 
 document.addEventListener("DOMContentLoaded", () => {
   initCloudLedgerSync();

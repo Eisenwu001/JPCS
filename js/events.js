@@ -4,6 +4,7 @@ import { getData, addEvent, deleteEvent, toggleParticipantPaid, setEventSlug, se
 import { formatMoney, formatDate, pesosToCentavos } from "./utils.js";
 import { openModal, closeModal, confirmAction, showToast } from "./ui.js";
 import { generateUniqueSlug, publishEvent, setEventActive as setEventActiveRemote, subscribeToSubmissions, updateSubmissionStatus } from "./cloud.js";
+import { compressImageToDataUrl } from "./image.js";
 
 // Tracks live Firestore listeners so they get torn down and replaced
 // cleanly on every re-render, instead of silently piling up — see the
@@ -571,18 +572,33 @@ export function initEventModal() {
     submitBtn.disabled = true;
     submitBtn.textContent = "Publishing link...";
 
+    const qrInput = document.getElementById("eventQrInput");
+    const qrFile = qrInput?.files?.[0] || null;
+    let qrCodeDataUrl = null;
+
+    if (qrFile) {
+      submitBtn.textContent = "Processing QR Code...";
+      try {
+        qrCodeDataUrl = await compressImageToDataUrl(qrFile);
+      } catch (err) {
+        console.error("QR Code compression failed:", err);
+        showToast("Couldn't compress QR Code. Proceeding without it.", "warning");
+      }
+    }
+
+    submitBtn.textContent = "Publishing link...";
     const feeCentavos = pesosToCentavos(feeInput);
     let slug = null;
 
     try {
       slug = await generateUniqueSlug(title);
-      await publishEvent({ slug, title, description, feeCentavos, date, category });
+      await publishEvent({ slug, title, description, feeCentavos, date, category, qrCodeDataUrl });
     } catch (err) {
       console.error("Couldn't publish event to Firebase:", err);
       showToast("Saved locally, but the shareable link failed. Check Firebase setup", "error");
     }
 
-    addEvent({ title, date, feeCentavos, description, slug, category });
+    addEvent({ title, date, feeCentavos, description, slug, category, qrCodeDataUrl });
     showToast(slug ? "Event created and link is live" : "Event created", "success");
     closeModal(overlay);
     e.target.reset();

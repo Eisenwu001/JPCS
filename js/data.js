@@ -28,7 +28,145 @@ function seedData() {
     events: [],
     transactions: [], // { id, type: 'income'|'expense', category, amount, date, note, source: 'manual'|'event', eventId?, memberId? }
     tasks: [],
+    academicSchedules: [],
   };
+}
+
+function getSeedAcademicSchedules() {
+  return [
+    {
+      id: "seed-async-1",
+      title: "Asynchronous GE Classes",
+      category: "async",
+      subCategory: "blue",
+      startDate: "2026-07-20",
+      endDate: "2026-07-22",
+      semester: "first_sem",
+      college: "all",
+      description: "Asynchronous learning mode for all general education courses."
+    },
+    {
+      id: "seed-async-2",
+      title: "Departmental Async Day",
+      category: "async",
+      subCategory: "green",
+      startDate: "2026-08-11",
+      endDate: "2026-08-12",
+      semester: "first_sem",
+      college: "CCIT",
+      description: "College of Computer Studies and Information Technology async days."
+    },
+    {
+      id: "seed-async-3",
+      title: "Midterm Prep Async Day",
+      category: "async",
+      subCategory: "green",
+      startDate: "2026-09-15",
+      endDate: "2026-09-15",
+      semester: "first_sem",
+      college: "all",
+      description: "Campus-wide asynchronous review and prep day."
+    },
+    {
+      id: "seed-admission-1",
+      title: "Freshmen Admission Application",
+      category: "admission",
+      subCategory: "",
+      startDate: "2026-05-04",
+      endDate: "2026-05-15",
+      semester: "first_sem",
+      college: "all",
+      description: "Submission of requirements for incoming freshmen students."
+    },
+    {
+      id: "seed-reg-1",
+      title: "Online Registration Period",
+      category: "registration",
+      subCategory: "",
+      startDate: "2026-06-08",
+      endDate: "2026-06-19",
+      semester: "first_sem",
+      college: "all",
+      description: "Enrollment and subject selection for AY 2026-2027."
+    },
+    {
+      id: "seed-classes-1",
+      title: "First Semester Classes",
+      category: "classes",
+      subCategory: "",
+      startDate: "2026-06-22",
+      endDate: "2026-10-23",
+      semester: "first_sem",
+      college: "all",
+      description: "Regular class lectures and academic activities."
+    },
+    {
+      id: "seed-exam-prelim",
+      title: "Prelim Examinations",
+      category: "exams",
+      subCategory: "prelim",
+      startDate: "2026-07-27",
+      endDate: "2026-08-01",
+      semester: "first_sem",
+      college: "all",
+      description: "First periodical examinations for AY 2026-2027 First Semester."
+    },
+    {
+      id: "seed-exam-midterm",
+      title: "Midterm Examinations",
+      category: "exams",
+      subCategory: "midterm",
+      startDate: "2026-09-07",
+      endDate: "2026-09-12",
+      semester: "first_sem",
+      college: "all",
+      description: "Midterm major examinations."
+    },
+    {
+      id: "seed-exam-final",
+      title: "Final Examinations",
+      category: "exams",
+      subCategory: "final",
+      startDate: "2026-10-19",
+      endDate: "2026-10-24",
+      semester: "first_sem",
+      college: "all",
+      description: "Semestral final examinations."
+    },
+    {
+      id: "seed-grades-1",
+      title: "Grades Encoding Period",
+      category: "grades_submission",
+      subCategory: "regular",
+      startDate: "2026-10-26",
+      endDate: "2026-10-31",
+      semester: "first_sem",
+      college: "all",
+      description: "Faculty submission of student grades to the portal."
+    },
+    {
+      id: "seed-holiday-1",
+      title: "Independence Day",
+      category: "holidays",
+      subCategory: "",
+      startDate: "2026-06-12",
+      endDate: "2026-06-12",
+      semester: "all",
+      college: "all",
+      description: "National holiday."
+    },
+    {
+      id: "seed-holiday-2",
+      title: "National Heroes Day",
+      category: "holidays",
+      subCategory: "",
+      startDate: "2026-08-31",
+      endDate: "2026-08-31",
+      semester: "all",
+      college: "all",
+      description: "National holiday."
+    }
+  ];
 }
 
 function load() {
@@ -36,9 +174,13 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : seedData();
     if (!parsed.tasks) parsed.tasks = [];
+    if (!parsed.academicSchedules || parsed.academicSchedules.length === 0) {
+      parsed.academicSchedules = getSeedAcademicSchedules();
+    }
     return parsed;
   } catch {
     const seeded = seedData();
+    seeded.academicSchedules = getSeedAcademicSchedules();
     return seeded;
   }
 }
@@ -107,6 +249,7 @@ export function initCloudLedgerSync() {
     if (snap.exists()) {
       state = snap.data();
       if (!state.tasks) state.tasks = [];
+      if (!state.academicSchedules) state.academicSchedules = [];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       store.set("data", state);
     } else {
@@ -383,9 +526,9 @@ export function deleteMember(id) {
   persist();
 }
 
-export function addEvent({ title, date, feeCentavos, description, slug = null, category = "general" }) {
+export function addEvent({ title, date, feeCentavos, description, slug = null, category = "general", qrCodeDataUrl = null }) {
   const participants = state.members.map((m) => ({ memberId: m.id, paid: false }));
-  const event = { id: uid(), title, date, feeCentavos, description, participants, slug, active: true, category };
+  const event = { id: uid(), title, date, feeCentavos, description, participants, slug, active: true, category, qrCodeDataUrl };
   state.events.push(event);
   persist();
   return event;
@@ -557,5 +700,45 @@ export function updateTask(id, updates) {
 export function deleteTask(id) {
   if (!state.tasks) state.tasks = [];
   state.tasks = state.tasks.filter((t) => t.id !== id);
+  persist();
+}
+
+// ---------- Academic Calendar Schedules ----------
+
+export function addAcademicSchedule({ title, category, subCategory = "", startDate, endDate, semester = "all", college = "all", description = "" }) {
+  const schedule = {
+    id: uid(),
+    title,
+    category, // "admission", "registration", "classes", "grades_submission", "holidays", "exams", "async"
+    subCategory, // "prelim", "midterm", "final", "regular", "summer", "green", "blue"
+    startDate,
+    endDate: endDate || startDate,
+    semester, // "first_sem", "second_sem", "summer", "all"
+    college, // "all", "CAS", "CBA", "CCIT", etc.
+    description,
+    createdAt: todayISO(),
+    updatedAt: todayISO()
+  };
+  if (!state.academicSchedules) state.academicSchedules = [];
+  state.academicSchedules.push(schedule);
+  persist();
+  return schedule;
+}
+
+export function updateAcademicSchedule(id, updates) {
+  if (!state.academicSchedules) state.academicSchedules = [];
+  const schedule = state.academicSchedules.find((s) => s.id === id);
+  if (schedule) {
+    Object.assign(schedule, updates);
+    schedule.updatedAt = todayISO();
+    persist();
+    return true;
+  }
+  return false;
+}
+
+export function deleteAcademicSchedule(id) {
+  if (!state.academicSchedules) state.academicSchedules = [];
+  state.academicSchedules = state.academicSchedules.filter((s) => s.id !== id);
   persist();
 }

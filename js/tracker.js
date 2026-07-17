@@ -7,6 +7,9 @@ import { isConnected } from "./sheets-sync.js";
 import { auth } from "./firebase.js";
 
 let editingTaskId = null;
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let selectedDateStr = new Date().toISOString().slice(0, 10);
 
 // Helper to calculate relative date statuses cleanly (no emoji)
 function getFriendlyDateStatus(startDateStr, endDateStr, status) {
@@ -418,6 +421,7 @@ export function renderTracker() {
       </div>
 
     </div>
+
   `;
 
   if (window.lucide) window.lucide.createIcons();
@@ -600,7 +604,7 @@ export function initTaskModal() {
   });
 }
 
-function openTaskModal(taskId = null) {
+export function openTaskModal(taskId = null, prefilledDate = null) {
   editingTaskId = taskId;
   const data = getData();
   const task = taskId ? (data.tasks || []).find((t) => t.id === taskId) : null;
@@ -654,7 +658,7 @@ function openTaskModal(taskId = null) {
     statusSelect.value = "todo";
     prioritySelect.value = "medium";
     categorySelect.value = "general";
-    if (startDateInput) startDateInput.value = "";
+    if (startDateInput) startDateInput.value = prefilledDate || "";
     if (endDateInput) endDateInput.value = "";
   }
 

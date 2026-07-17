@@ -147,6 +147,14 @@ function renderForm(card, event) {
         </div>
       </div>
 
+      <div class="form-group" id="qrCodeGroup" style="display:none; text-align:center; margin-bottom:16px;">
+        <label style="display:block; margin-bottom:8px; text-align:left;">Scan QR to Pay (GCash)</label>
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px dashed var(--color-border); display:inline-block;">
+          <img id="eventQrImg" src="${event.qrCodeDataUrl || ''}" style="max-width:200px; max-height:200px; border-radius:4px; cursor:zoom-in; display:block; margin:0 auto;" />
+          <p style="font-size:11px; color:var(--color-text-secondary); margin-top:6px; margin-bottom:0;">Tap QR to view full size</p>
+        </div>
+      </div>
+
       <div class="form-group" id="proofGroup" style="display:none;">
         <label for="proofInput">Upload Proof of Payment</label>
         <label class="file-upload-zone" id="uploadZone">
@@ -167,6 +175,7 @@ function renderForm(card, event) {
 
   const methodOptions = card.querySelectorAll(".payment-method-option");
   const proofGroup = document.getElementById("proofGroup");
+  const qrCodeGroup = document.getElementById("qrCodeGroup");
   const proofInput = document.getElementById("proofInput");
   const uploadZone = document.getElementById("uploadZone");
   const uploadLabel = document.getElementById("uploadLabel");
@@ -178,8 +187,26 @@ function renderForm(card, event) {
       const isGcash = opt.dataset.method === "gcash";
       proofGroup.style.display = isGcash ? "block" : "none";
       proofInput.required = isGcash;
+      if (qrCodeGroup) {
+        qrCodeGroup.style.display = (isGcash && event.qrCodeDataUrl) ? "block" : "none";
+      }
     });
   });
+
+  const qrImg = document.getElementById("eventQrImg");
+  const lightbox = document.getElementById("imageLightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+
+  if (qrImg && lightbox && lightboxImg) {
+    qrImg.addEventListener("click", () => {
+      lightboxImg.src = qrImg.src;
+      lightbox.style.display = "flex";
+    });
+
+    lightbox.addEventListener("click", () => {
+      lightbox.style.display = "none";
+    });
+  }
 
   proofInput.addEventListener("change", () => {
     const file = proofInput.files[0];

@@ -18,12 +18,13 @@ function getRoleRank(role) {
   if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") return 6;
   if (r.startsWith("social media manager")) return 7;
   if (r.startsWith("sergeant-at-arms")) return 8;
-  if (r.startsWith("1st year representative") || r === "1st year rep") return 9;
-  if (r.startsWith("2nd year representative") || r === "2nd year rep") return 10;
-  if (r.startsWith("3rd year representative") || r === "3rd year rep") return 11;
-  if (r.startsWith("4th year representative") || r === "4th year rep") return 12;
-  if (r.startsWith("special projects")) return 13;
-  if (r.startsWith("membership committee")) return 14;
+  if (r === "coder") return 9;
+  if (r.startsWith("special projects")) return 10;
+  if (r.startsWith("membership committee")) return 11;
+  if (r.startsWith("1st year representative") || r === "1st year rep") return 12;
+  if (r.startsWith("2nd year representative") || r === "2nd year rep") return 13;
+  if (r.startsWith("3rd year representative") || r === "3rd year rep") return 14;
+  if (r.startsWith("4th year representative") || r === "4th year rep") return 15;
   
   // Any other officer roles
   return 100;
@@ -43,52 +44,76 @@ function getOfficerBadge(role) {
   let border = "rgba(107, 114, 128, 0.15)";
 
   if (r === "president") {
-    bg = "rgba(124, 58, 237, 0.1)";
-    color = "#8b5cf6"; // Purple
-    border = "rgba(124, 58, 237, 0.2)";
+    bg = "rgba(168, 85, 247, 0.1)"; // Violet
+    color = "#a855f7";
+    border = "rgba(168, 85, 247, 0.2)";
   } else if (r.startsWith("vice president") || r === "vp" || r.startsWith("vp")) {
-    bg = "rgba(59, 130, 246, 0.1)";
-    color = "#3b82f6"; // Blue
-    border = "rgba(59, 130, 246, 0.2)";
-  } else if (r.startsWith("secretary")) {
-    bg = "rgba(13, 148, 136, 0.1)";
-    color = "#0d9488"; // Teal
-    border = "rgba(13, 148, 136, 0.2)";
-  } else if (r.startsWith("treasurer")) {
-    bg = "rgba(16, 185, 129, 0.1)";
-    color = "var(--color-income)"; // Green
-    border = "rgba(16, 185, 129, 0.2)";
-  } else if (r.startsWith("auditor")) {
-    bg = "rgba(245, 158, 11, 0.1)";
-    color = "#d97706"; // Amber
-    border = "rgba(245, 158, 11, 0.2)";
-  } else if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") {
-    bg = "rgba(236, 72, 153, 0.1)";
-    color = "#db2777"; // Pink
-    border = "rgba(236, 72, 153, 0.2)";
-  } else if (r.startsWith("social media manager")) {
-    bg = "rgba(219, 39, 119, 0.1)";
-    color = "#be185d"; // Pink/Rose
-    border = "rgba(219, 39, 119, 0.2)";
-  } else if (r.startsWith("sergeant-at-arms")) {
-    bg = "rgba(239, 68, 68, 0.1)";
-    color = "var(--color-expense)"; // Red
-    border = "rgba(239, 68, 68, 0.2)";
-  } else if (r.includes("representative") || r.includes("rep")) {
-    bg = "rgba(99, 102, 241, 0.1)";
-    color = "#4f46e5"; // Indigo
+    bg = "rgba(99, 102, 241, 0.1)"; // Indigo
+    color = "#6366f1";
     border = "rgba(99, 102, 241, 0.2)";
-  } else if (r.includes("special projects") || r.includes("membership")) {
-    bg = "rgba(244, 63, 94, 0.1)"; // Rose / Pinkish
+  } else if (r.startsWith("secretary")) {
+    bg = "rgba(59, 130, 246, 0.1)"; // Blue
+    color = "#3b82f6";
+    border = "rgba(59, 130, 246, 0.2)";
+  } else if (r.startsWith("treasurer")) {
+    bg = "rgba(6, 182, 212, 0.1)"; // Cyan
+    color = "#06b6d4";
+    border = "rgba(6, 182, 212, 0.2)";
+  } else if (r.startsWith("auditor")) {
+    bg = "rgba(16, 185, 129, 0.1)"; // Green
+    color = "#10b981";
+    border = "rgba(16, 185, 129, 0.2)";
+  } else if (r.startsWith("public relations officer") || r === "pro" || r === "p.r.o.") {
+    bg = "rgba(132, 204, 22, 0.1)"; // Lime
+    color = "#84cc16";
+    border = "rgba(132, 204, 22, 0.2)";
+  } else if (r.startsWith("social media manager")) {
+    bg = "rgba(234, 179, 8, 0.1)"; // Yellow
+    color = "#eab308";
+    border = "rgba(234, 179, 8, 0.2)";
+  } else if (r.startsWith("sergeant-at-arms")) {
+    bg = "rgba(245, 158, 11, 0.1)"; // Amber
+    color = "#f59e0b";
+    border = "rgba(245, 158, 11, 0.2)";
+  } else if (r === "coder") {
+    bg = "rgba(249, 115, 22, 0.1)"; // Orange
+    color = "#f97316";
+    border = "rgba(249, 115, 22, 0.2)";
+  } else if (r.startsWith("special projects")) {
+    bg = "rgba(244, 63, 94, 0.1)"; // Rose / Orange-Red
     color = "#f43f5e";
     border = "rgba(244, 63, 94, 0.2)";
+  } else if (r.startsWith("membership committee")) {
+    bg = "rgba(236, 72, 153, 0.1)"; // Pink
+    color = "#ec4899";
+    border = "rgba(236, 72, 153, 0.2)";
+  } else if (r.startsWith("1st year representative") || r === "1st year rep") {
+    bg = "rgba(251, 113, 133, 0.1)"; // Light Red / Rose-400
+    color = "#fb7185";
+    border = "rgba(251, 113, 133, 0.2)";
+  } else if (r.startsWith("2nd year representative") || r === "2nd year rep") {
+    bg = "rgba(244, 63, 94, 0.1)"; // Rose-500
+    color = "#f43f5e";
+    border = "rgba(244, 63, 94, 0.2)";
+  } else if (r.startsWith("3rd year representative") || r === "3rd year rep") {
+    bg = "rgba(225, 29, 72, 0.1)"; // Rose-600
+    color = "#e11d48";
+    border = "rgba(225, 29, 72, 0.2)";
+  } else if (r.startsWith("4th year representative") || r === "4th year rep") {
+    bg = "rgba(190, 24, 74, 0.1)"; // Rose-700
+    color = "#be185d";
+    border = "rgba(190, 24, 74, 0.2)";
+  } else if (r.includes("representative") || r.includes("rep")) {
+    bg = "rgba(239, 68, 68, 0.1)"; // Red
+    color = "#ef4444";
+    border = "rgba(239, 68, 68, 0.2)";
   } else {
     bg = "rgba(75, 85, 99, 0.08)";
     color = "var(--color-text-primary)";
     border = "rgba(75, 85, 99, 0.15)";
   }
 
-  return `<span class="status-badge" style="background:${bg}; color:${color}; border:1px solid ${border}; font-weight:600; padding:2px 8px; border-radius:4px; font-size:12px; display:inline-block;">${role}</span>`;
+  return `<span class="status-badge officer-badge" style="background:${bg}; color:${color}; border:1px solid ${border}; --badge-color:${color}; font-weight:600; padding:2px 8px; border-radius:4px; font-size:12px; display:inline-block;">${role}</span>`;
 }
 
 export function renderMembers() {

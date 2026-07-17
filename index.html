@@ -64,6 +64,9 @@
       <a href="#/tracker" class="nav-item" data-route="#/tracker" data-label="Tracker">
         <i data-lucide="check-square"></i><span>Tracker</span>
       </a>
+      <a href="#/calendar" class="nav-item" data-route="#/calendar" data-label="Academic Calendar">
+        <i data-lucide="calendar"></i><span>Academic Calendar</span>
+      </a>
       <a href="#/settings" class="nav-item" data-route="#/settings" data-label="Settings">
         <i data-lucide="settings"></i><span>Settings</span>
       </a>
@@ -220,6 +223,7 @@
       <section data-route="#/transactions"></section>
       <section data-route="#/reports"></section>
       <section data-route="#/tracker"></section>
+      <section data-route="#/calendar"></section>
       <section data-route="#/settings"></section>
 
     </main>
@@ -357,6 +361,8 @@
           <option value="1st Year Representative">
           <option value="2nd Year Representative">
           <option value="3rd Year Representative">
+          <option value="4th Year Representative">
+          <option value="Coder">
           <option value="Special Projects">
           <option value="Membership Committee">
         </datalist>
@@ -389,6 +395,10 @@
       <div class="form-group"><label for="eventDateInput">Date</label><input type="date" id="eventDateInput" class="form-control" required /></div>
       <div class="form-group"><label for="eventFeeInput">Fee per Member (₱)</label><input type="number" step="0.01" min="0" id="eventFeeInput" class="form-control" required /></div>
       <div class="form-group"><label for="eventDescInput">Description (optional)</label><input type="text" id="eventDescInput" class="form-control" /></div>
+      <div class="form-group">
+        <label for="eventQrInput">GCash QR Code (optional)</label>
+        <input type="file" id="eventQrInput" class="form-control" accept="image/*" />
+      </div>
       <div class="modal-actions"><button type="submit" class="btn btn-primary">Create Event</button></div>
     </form>
   </div>
