@@ -21,7 +21,8 @@ let managePage = 1;
 const ITEMS_PER_PAGE = 8;
 
 function publicUrlFor(slug) {
-  return `${location.origin}/event/${slug}`;
+  const base = location.origin + location.pathname.replace(/index\.html$/, "").replace(/\/$/, "");
+  return `${base}/event.html?slug=${slug}`;
 }
 
 export function renderEvents() {
@@ -176,6 +177,12 @@ function renderEventCard(event, data, isAdmin) {
   const paidCount = event.participants.filter((p) => p.paid).length;
   const total = event.participants.length;
 
+  const isMembership = event.category === "membership_fee" ||
+    event.slug?.includes("membership") ||
+    event.title?.toLowerCase().includes("membership");
+
+  const paidCountDisplay = isMembership ? `${paidCount} Paid` : `${paidCount} / ${total} Paid`;
+
   // Pretty category label
   let categoryLabel = "General Event";
   if (event.category === "membership_fee") {
@@ -206,7 +213,7 @@ function renderEventCard(event, data, isAdmin) {
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:12px; margin:16px 0; background:rgba(255,255,255,0.02); border:1px solid var(--color-border); padding:12px; border-radius:var(--radius-md);">
         <div style="text-align:center;">
           <p style="margin:0; font-size:11px; color:var(--color-text-secondary); text-transform:uppercase; font-weight:600; letter-spacing:0.05em;">Total Paid</p>
-          <p style="margin:4px 0 0; font-size:16px; font-weight:700; color:var(--color-income);">${paidCount} / ${total} Paid</p>
+          <p style="margin:4px 0 0; font-size:16px; font-weight:700; color:var(--color-income);">${paidCountDisplay}</p>
         </div>
         <div style="text-align:center;">
           <p style="margin:0; font-size:11px; color:var(--color-text-secondary); text-transform:uppercase; font-weight:600; letter-spacing:0.05em;">Pending Review</p>
@@ -252,7 +259,12 @@ function renderSubmissionsManagement(event, submissions) {
   if (subtitleEl) subtitleEl.textContent = `${categoryLabel} · Fee: ${formatMoney(event.feeCentavos)}`;
 
   // Filter submissions by current tab status
-  let filtered = submissions.filter((s) => s.status === currentTab);
+  let filtered = submissions.filter((s) => {
+    if (currentTab === "approved") {
+      return s.status === "approved" || s.status === "paid";
+    }
+    return s.status === currentTab;
+  });
 
   // Filter by method
   if (manageMethodFilter !== "all") {
