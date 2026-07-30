@@ -1,22 +1,3 @@
-// js/auth.js
-//
-// Two ways in now: email+password, or Google Sign-In. Since there's no
-// longer one single hardcoded identity, being "signed in" isn't enough
-// to be admin — ANYONE can authenticate with either method (that's how
-// Google Sign-In works by nature). What actually decides admin access
-// is the `admins` collection in Firestore: your email has to exist as
-// a document there. That check happens twice, on purpose:
-//
-//   1. Here, client-side, right after sign-in — purely for UX, so a
-//      signed-in-but-not-admin user doesn't see broken buttons that
-//      look enabled but silently fail on every click.
-//   2. Inside firestore.rules — the real enforcement. Even if this
-//      file had a bug, a non-admin still couldn't read or write
-//      anything, because the rule checks the same allowlist server-side.
-//
-// To add yourself as the first admin: Firebase Console → Firestore →
-// start collection "admins" → Add document → Document ID: your exact
-// email → any field (e.g. role: "admin") → Save.
 
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -36,16 +17,10 @@ export function initAdminGate() {
       const allowed = await isAllowedAdmin(user.email);
       store.set("isAdmin", allowed);
       if (!allowed) {
-        // Signed into a real Google/Firebase account, just not one on
-        // the allowlist — don't leave them silently half-signed-in.
         showModalError(`${user.email} isn't on the admin list yet. Ask an existing admin to add you in Firebase Console.`);
         await signOut(auth);
       }
     } catch (err) {
-      // The allowlist check itself failed — almost always means
-      // firestore.rules hasn't been published yet, or the Firestore
-      // database hasn't been created in this project. This is NOT the
-      // same problem as "wrong password" — don't let it look like one.
       store.set("isAdmin", false);
       showModalError("Signed in, but couldn't verify admin access. Check that firestore.rules is published and Firestore is enabled. See browser console (F12) for details.");
       await signOut(auth);
