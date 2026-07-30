@@ -1,6 +1,6 @@
 // js/ui.js
 // Small cross-cutting UI helpers shared by every module: toasts,
-// modal open/close, and the "coming in a later build step" placeholder
+// modal open/close
 // used by sections that aren't wired to Firebase yet.
 
 export function showToast(message, type = "info") {
