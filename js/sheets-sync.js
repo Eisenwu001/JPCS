@@ -1,22 +1,4 @@
 // js/sheets-sync.js
-//
-// HOW THIS WORKS: your Ctrl+Alt+J admin login (Google or email+password)
-// is completely separate from this. Connecting Sheets asks Google for
-// one additional, narrow permission — write access to your spreadsheets
-// — via its own popup, so people who just want the simple admin login
-// are never shown an extra consent screen they didn't ask for.
-//
-// WHAT "AUTOMATIC" ACTUALLY MEANS HERE: every local ledger change
-// (add/edit/delete a transaction or member) queues a push to your
-// Sheet, debounced by a few seconds so rapid edits become one write,
-// not one per keystroke. This only runs while this browser tab is open
-// and connected — there's no 24/7 background sync (see the README note
-// on why that would need a real backend instead).
-//
-// TOKEN LIFETIME: Google's access token is short-lived (roughly an
-// hour). There's no silent refresh — when it expires, the next push
-// fails with a clear "reconnect" message instead of failing silently
-// forever.
 
 import { GoogleAuthProvider, signInWithPopup } from "../assets/vendor/firebase.bundle.js";
 import { sheetsAuthInstance as auth } from "./firebase.js";
