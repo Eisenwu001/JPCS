@@ -107,10 +107,6 @@
   overflow-x: hidden;
 }
 
-/* Signature detail: a single pill that slides between nav items instead
-   of each item toggling its own background, closer to Linear's sidebar
-   than a plain :hover/.active swap. Left/right are edge-relative, so it
-   automatically fits both the rail and expanded widths with no JS. */
 .nav-indicator {
   position: absolute;
   top: 0;
