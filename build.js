@@ -36,7 +36,6 @@ async function runBuild() {
   }
 
   // 4. Bundle and minify our modular ES Modules with esbuild
-  // We explicitly disable sourcemap to prevent original source files mapping in DevTools!
   await esbuild.build({
     entryPoints: [
       path.join(__dirname, 'js/app.js'),
