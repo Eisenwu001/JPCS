@@ -81,19 +81,23 @@ body {
   margin-bottom: var(--space-4);
 }
 
-.payment-method-option {
+.payment-method-option,
+.form-group label.payment-method-option {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 14px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 12px 16px !important;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.2;
+  margin-bottom: 0 !important;
+  color: var(--color-text-primary);
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
@@ -107,11 +111,18 @@ body {
 }
 
 .payment-method-option svg,
-.payment-method-option i {
-  width: 18px;
-  height: 18px;
-  display: block;
-  flex-shrink: 0;
+.payment-method-option i,
+.payment-method-option [data-lucide] {
+  width: 18px !important;
+  height: 18px !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+.payment-method-option span {
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .file-upload-zone {
