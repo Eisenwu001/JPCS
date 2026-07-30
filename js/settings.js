@@ -1,10 +1,4 @@
 // js/settings.js
-//
-// Export/Import here is a manual safety net on top of the automatic
-// Firestore sync in data.js. Firestore is the real source of truth now,
-// but a local export is still worth having: a way to roll back to a
-// known-good state, or move data between projects if you ever migrate
-// to a different Firebase project.
 
 import { store } from "./store.js";
 import { getData } from "./data.js";
