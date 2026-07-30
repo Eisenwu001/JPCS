@@ -1,13 +1,6 @@
 // js/utils.js
-// Cross-cutting helpers used by every module. Two rules baked in here
-// on purpose:
-//   1. Money is NEVER a float in this app. Firestore stores integer
-//      centavos (₱1.00 = 100). formatMoney() is the only place a peso
-//      sign appears.
-//   2. Dates are stored as Firestore Timestamps, formatted only at
-//      render time, so sorting/filtering by date stays server-accurate.
 
-/** Convert a peso amount typed by a user (e.g. "150.50") into integer centavos. */
+/** Convert peso string to integer centavos. */
 export function pesosToCentavos(pesoString) {
   const value = Number(pesoString);
   if (Number.isNaN(value)) throw new Error("Invalid amount");

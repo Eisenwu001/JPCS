@@ -5,21 +5,21 @@ import { openTaskModal } from "./tracker.js";
 import { confirmAction, showToast } from "./ui.js";
 
 // Calendar View State
-let currentYear = 2026; // Default to 2026 to showcase the pre-populated academic year perfectly
-let currentMonth = 6;   // Default to July 2026
-let selectedDateStr = "2026-07-20"; // Start with a selected date that has an active async day for illustration
-let currentView = "academic-year"; // "month" or "academic-year" as default to match video wow-factor
-let editingScheduleId = null; // Tracks which milestone we are currently editing
-let isFormExpanded = false; // Tracks if the Add Milestone form is open/expanded
+let currentYear = 2026;
+let currentMonth = 6;
+let selectedDateStr = "2026-07-20";
+let currentView = "academic-year";
+let editingScheduleId = null;
+let isFormExpanded = false;
 
-// Filter States (Inspired by the video)
-let filterSemester = "first_sem"; // "all", "first_sem", "second_sem", "summer"
-let filterCollege = "all";        // "all", "CAS", "CBA", "CCIT", "COE", "CDENT", "CEDUC"
-let filterAsyncMode = "show_all";  // "show_all", "hide_all", "green", "blue"
+// Filter States
+let filterSemester = "first_sem";
+let filterCollege = "all";
+let filterAsyncMode = "show_all";
 
-// Advanced Category Filter States (matching the high-fidelity UI layout)
-let admissionFilterMode = "start";   // "start", "whole", "hide"
-let registrationFilterMode = "start"; // "start", "whole", "hide"
+// Category Filter States
+let admissionFilterMode = "start";
+let registrationFilterMode = "start";
 let showClasses = true;
 let showGrades = true;
 let showHolidays = true;
@@ -692,9 +692,8 @@ function renderSingleMonthComponent(monthsList, tasks, events, schedules) {
   `;
 }
 
-// Sub-Component: Render Academic Year Grid (12 Months simultaneously!)
+// Render Academic Year Grid
 function renderAcademicYearGridComponent(monthsList, tasks, events, schedules) {
-  // We want to render a sequence of 12 months: January to December!
   const academicMonths = [
     { year: currentYear, month: 0 }, // January
     { year: currentYear, month: 1 }, // February

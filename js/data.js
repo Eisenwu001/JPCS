@@ -221,18 +221,7 @@ async function pushLedgerToCloud(currentState) {
   await setDoc(doc(db, ...LEDGER_DOC_PATH), currentState);
 }
 
-/** Call once at startup. Loads the real ledger from Firestore (falling
- * back to whatever's cached locally until that arrives), and keeps
- * listening afterward so a change made on a different device — or a
- * different browser tab — actually shows up here too, not just changes
- * made in this tab.
- *
- * KNOWN EDGE CASE: if you edit something in the ~1 second between page
- * load and this first snapshot arriving, and the cloud already has
- * different data from another device, the cloud version wins and that
- * split-second edit is lost. Worth knowing, not worth engineering a
- * full conflict-merge system for — this is a single-editor-in-practice
- * tool, not a multi-user collaborative one. */
+/** Initialize cloud ledger sync with Firestore. */
 export function initCloudLedgerSync() {
   const ledgerRef = doc(db, ...LEDGER_DOC_PATH);
 
@@ -390,9 +379,7 @@ export function getMonthlyIncomeVsExpense(monthsBack = 6) {
   };
 }
 
-/** Day-by-day breakdown for one specific month — this is the "zoom in"
- * view. A monthly bar only tells you the total; this is what actually
- * answers "which day did this happen." */
+/** Day-by-day income and expense breakdown for a month. */
 export function getDailyIncomeVsExpense(year, month) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const buckets = Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, income: 0, expense: 0 }));
@@ -427,13 +414,7 @@ function normalizeName(s) {
   return (s || "").toLowerCase().trim().replace(/\s+/g, " ");
 }
 
-/** Best-guess match for a name someone typed on the public submission
- * form against your local Members list — checks both full name and
- * nickname, since "Lixter" and "Lixter Niño D. Dinawanao" should match
- * the same person. Returns null below a confidence floor rather than
- * forcing a guess — this is a SUGGESTION for the admin to confirm in
- * the review table, never applied automatically without a human
- * looking at it (see the note in events.js for why). */
+/** Matches a submitted name against the member list. */
 export function findBestMemberMatch(submittedName) {
   const query = normalizeName(submittedName);
   if (!query) return null;
@@ -473,12 +454,7 @@ export function findBestMemberMatch(submittedName) {
   return { member: best, confidence: bestScore >= 80 ? "high" : bestScore >= 60 ? "medium" : "low" };
 }
 
-/** Marks a member paid for an event as a RESULT of approving a public
- * submission — separate from toggleParticipantPaid() on purpose,
- * since that function also logs a transaction, and the submission
- * approval flow already logs one itself. Calling both would double-count
- * the payment. If the member wasn't already tracked as a participant
- * (e.g. they joined after the event was created), this adds them. */
+/** Marks a member paid for an event from a submission approval. */
 export function markParticipantPaidFromSubmission(eventId, memberId) {
   const event = state.events.find((e) => e.id === eventId);
   if (!event) return;
@@ -540,11 +516,6 @@ export function setEventSlug(eventId, slug) {
   persist();
 }
 
-/** Local mirror of the Firestore "active" flag — kept in sync by the
- * caller (events.js) alongside the real cloud.js call, so the event
- * card can render Open/Closed instantly without waiting on a round
- * trip. The actual enforcement (whether the public page accepts new
- * submissions) lives in Firestore, not here. */
 export function setEventActive(eventId, active) {
   const event = state.events.find((e) => e.id === eventId);
   if (event) event.active = active;
@@ -557,11 +528,7 @@ export function deleteEvent(id) {
   persist();
 }
 
-/** Flip a participant's paid status. Marking paid records an income
- * transaction; un-marking removes it. This is a simplification of the
- * "append-only ledger" pattern used in the Firestore rules draft — fine
- * for a single-editor local tool, but a real multi-user backend should
- * use reversal entries instead of deleting history (see README). */
+/** Toggle participant paid status and record transaction. */
 export function toggleParticipantPaid(eventId, memberId) {
   const event = state.events.find((e) => e.id === eventId);
   if (!event) return;

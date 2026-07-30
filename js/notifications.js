@@ -68,7 +68,7 @@ function getInitials(name) {
   return "??";
 }
 
-/** Formats and sends a Task Assignment email matching the requested classic UI design */
+/** Sends a Task Assignment email. */
 export async function sendTaskAssignmentEmail(task, member) {
   if (!isConnected()) {
     console.warn("Gmail not connected. Skipping email dispatch.");
@@ -93,7 +93,7 @@ export async function sendTaskAssignmentEmail(task, member) {
   const statusColor = task.status === "done" ? "#16a34a" : (task.status === "todo" ? "#d97706" : "#2563eb");
   const priorityColor = task.priority === "high" ? "#dc2626" : (task.priority === "low" ? "#2563eb" : "#ea580c");
 
-  const appUrl = "https://jpcstreasury.vercel.app";
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://jpcs-treasury.app";
   const subject = `New Task Assigned: ${taskTitle}`;
 
   const htmlBody = `
@@ -167,7 +167,7 @@ export async function sendTaskAssignmentEmail(task, member) {
   return true;
 }
 
-/** Formats and sends a Task Deadline Reminder email matching the requested classic UI design with red accents */
+/** Sends a Task Deadline Reminder email. */
 export async function sendTaskDeadlineEmail(task, member) {
   if (!isConnected()) {
     console.warn("Gmail not connected. Skipping email dispatch.");
@@ -192,7 +192,7 @@ export async function sendTaskDeadlineEmail(task, member) {
   const statusColor = task.status === "done" ? "#16a34a" : (task.status === "todo" ? "#d97706" : "#2563eb");
   const priorityColor = task.priority === "high" ? "#dc2626" : (task.priority === "low" ? "#2563eb" : "#ea580c");
 
-  const appUrl = "https://jpcstreasury.vercel.app";
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://jpcs-treasury.app";
   const subject = `Deadline Reminder: ${taskTitle}`;
 
   const htmlBody = `
@@ -266,7 +266,7 @@ export async function sendTaskDeadlineEmail(task, member) {
   return true;
 }
 
-/** Formats and sends a Task Updated email when a task's details are modified */
+/** Sends a Task Updated email. */
 export async function sendTaskUpdatedEmail(task, member) {
   if (!isConnected()) {
     console.warn("Gmail not connected. Skipping email dispatch.");
@@ -290,7 +290,7 @@ export async function sendTaskUpdatedEmail(task, member) {
   const statusColor = task.status === "done" ? "#16a34a" : (task.status === "todo" ? "#d97706" : "#2563eb");
   const priorityColor = task.priority === "high" ? "#dc2626" : (task.priority === "low" ? "#2563eb" : "#ea580c");
 
-  const appUrl = "https://jpcstreasury.vercel.app";
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://jpcs-treasury.app";
   const subject = `Task Updated: ${taskTitle}`;
 
   const htmlBody = `

@@ -20,6 +20,11 @@ const PORT = 3000;
 // Serve static files from the compiled dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Serve public event page for clean /event/:slug URLs
+app.get('/event/:slug', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'event.html'));
+});
+
 // Fallback all routes to dist/index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));

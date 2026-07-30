@@ -1,18 +1,11 @@
 // js/public-event.js
-// Drives event.html. No admin gate, no local ledger — this is the page
-// a member's own phone opens from the shared link.
-
 import { getPublicEvent, submitPayment, getSubmissionById } from "./cloud.js";
 import { compressImageToDataUrl } from "./image.js";
 import { formatMoney, formatDate, pesosToCentavos } from "./utils.js";
 
-const STORAGE_KEY = "jpcs_my_submissions"; // { [eventSlug]: submissionId }
+const STORAGE_KEY = "jpcs_my_submissions";
 
 function getSlugFromUrl() {
-  // Supports both a clean path (/event/membership-fee-2026, if your host
-  // rewrites that to event.html) and a plain query string
-  // (event.html?slug=membership-fee-2026), which works on any static
-  // host with zero server configuration.
   const pathMatch = location.pathname.match(/\/event\/([a-z0-9-]+)/i);
   if (pathMatch) return pathMatch[1];
   return new URLSearchParams(location.search).get("slug");
@@ -41,6 +34,15 @@ async function init() {
     return;
   }
 
+  // Clean up URL in address bar if it contains query parameters or event.html
+  if (slug && location.pathname !== `/event/${slug}`) {
+    try {
+      history.replaceState(null, "", `/event/${slug}`);
+    } catch (e) {
+      // Fallback silently if history API isn't allowed in iframe sandbox
+    }
+  }
+
   let event;
   try {
     event = await getPublicEvent(slug);
@@ -55,10 +57,7 @@ async function init() {
     return;
   }
 
-  // If this browser already submitted to this event, show that status
-  // instead of jumping straight to a blank form. This only works from
-  // the same browser/device that submitted — see the note in
-  // renderStatus() about why that's a deliberate tradeoff, not a bug.
+  // Check for existing submission
   const mySubmissionId = getMySubmissions()[slug];
   if (mySubmissionId) {
     try {
@@ -110,6 +109,8 @@ function renderStatus(card, event, submission) {
 
     <div class="public-status-details">
       <div><span>Name</span><span>${submission.name}</span></div>
+      ${submission.course ? `<div><span>Course</span><span>${submission.course}</span></div>` : ""}
+      ${submission.yearLevel ? `<div><span>Year Level</span><span>${submission.yearLevel}</span></div>` : ""}
       <div><span>Method</span><span style="text-transform:capitalize;">${submission.paymentMethod}</span></div>
       <div><span>Amount</span><span>${formatMoney(event.feeCentavos)}</span></div>
     </div>
@@ -122,6 +123,10 @@ function renderStatus(card, event, submission) {
 }
 
 function renderForm(card, event) {
+  const isMembershipFee = event.category === "membership_fee" ||
+    (event.title && event.title.toLowerCase().includes("membership")) ||
+    (event.slug && event.slug.includes("membership"));
+
   card.innerHTML = `
     <h1 class="public-event-title">${event.title}</h1>
     <p class="public-event-meta">${formatDate(event.date)}${event.description ? " · " + event.description : ""}</p>
@@ -129,12 +134,30 @@ function renderForm(card, event) {
 
     <form id="submitForm">
       <div class="form-group">
-        <label for="nameInput">Full Name</label>
-        <input type="text" id="nameInput" class="form-control" required autocomplete="name" />
+        <label for="nameInput">Full Name <span style="color:var(--color-expense);">*</span></label>
+        <input type="text" id="nameInput" class="form-control" required placeholder="e.g. Juan Dela Cruz" autocomplete="name" />
+      </div>
+
+      ${isMembershipFee ? `
+      <div class="form-group">
+        <label for="courseInput">Course <span style="color:var(--color-expense);">*</span></label>
+        <input type="text" id="courseInput" class="form-control" required placeholder="e.g. BSCS, BSIT, BSIS" autocomplete="off" />
       </div>
 
       <div class="form-group">
-        <label>Payment Method</label>
+        <label for="yearInput">Year Level <span style="color:var(--color-expense);">*</span></label>
+        <select id="yearInput" class="form-control" required style="width:100%;">
+          <option value="" disabled selected>Select Year Level</option>
+          <option value="1st Year">1st Year</option>
+          <option value="2nd Year">2nd Year</option>
+          <option value="3rd Year">3rd Year</option>
+          <option value="4th Year">4th Year</option>
+        </select>
+      </div>
+      ` : ""}
+
+      <div class="form-group">
+        <label>Payment Method <span style="color:var(--color-expense);">*</span></label>
         <div class="payment-method-options">
           <label class="payment-method-option" data-method="gcash">
             <input type="radio" name="method" value="gcash" required />
@@ -156,7 +179,7 @@ function renderForm(card, event) {
       </div>
 
       <div class="form-group" id="proofGroup" style="display:none;">
-        <label for="proofInput">Upload Proof of Payment</label>
+        <label for="proofInput">Upload Proof of Payment <span style="color:var(--color-expense);">*</span></label>
         <label class="file-upload-zone" id="uploadZone">
           <i data-lucide="upload"></i>
           <p id="uploadLabel">Tap to upload a screenshot</p>
@@ -220,11 +243,32 @@ function renderForm(card, event) {
     e.preventDefault();
     const submitBtn = document.getElementById("submitBtn");
     const errorEl = document.getElementById("formError");
-    const name = document.getElementById("nameInput").value.trim();
+    const nameInput = document.getElementById("nameInput");
+    const name = nameInput?.value.trim() || "";
+    const course = isMembershipFee ? document.getElementById("courseInput")?.value.trim() || "" : "";
+    const yearLevel = isMembershipFee ? document.getElementById("yearInput")?.value.trim() || "" : "";
     const method = card.querySelector("input[name=method]:checked")?.value;
     const proofFile = proofInput.files[0] || null;
 
-    if (!name || !method) return;
+    if (!name) {
+      errorEl.textContent = "Please enter your full name.";
+      errorEl.style.display = "block";
+      nameInput?.focus();
+      return;
+    }
+
+    if (isMembershipFee && (!course || !yearLevel)) {
+      errorEl.textContent = "Please fill in your Course and Year Level.";
+      errorEl.style.display = "block";
+      return;
+    }
+
+    if (!method) {
+      errorEl.textContent = "Please select a payment method.";
+      errorEl.style.display = "block";
+      return;
+    }
+
     if (method === "gcash" && !proofFile) {
       errorEl.textContent = "Please upload proof of payment for GCash.";
       errorEl.style.display = "block";
@@ -241,7 +285,14 @@ function renderForm(card, event) {
         proofImageDataUrl = await compressImageToDataUrl(proofFile);
         submitBtn.textContent = "Submitting...";
       }
-      const submissionId = await submitPayment({ eventSlug: event.slug, name, paymentMethod: method, proofImageDataUrl });
+      const submissionId = await submitPayment({
+        eventSlug: event.slug,
+        name,
+        course,
+        yearLevel,
+        paymentMethod: method,
+        proofImageDataUrl
+      });
       rememberSubmission(event.slug, submissionId);
       renderSuccess(card);
     } catch (err) {

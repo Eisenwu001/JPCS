@@ -15,7 +15,6 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Use the primary JPCS project as requested instead of the emerald platform project
 let sheetsAuthInstance = auth;
 
 export { sheetsAuthInstance };

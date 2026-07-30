@@ -1,13 +1,6 @@
 // js/image.js
-//
-// Proof-of-payment images get compressed here and stored directly as a
-// base64 string on the Firestore submission document — no Cloud
-// Storage, no Blaze plan required. Firestore documents cap at ~1MB;
-// this progressively shrinks the image until it comfortably fits,
-// which for a GCash receipt screenshot (mostly flat UI/text, compresses
-// very well) almost always succeeds on the first or second attempt.
 
-const MAX_DATA_URL_BYTES = 700_000; // leaves headroom under Firestore's 1MB doc cap
+const MAX_DATA_URL_BYTES = 700_000;
 
 export async function compressImageToDataUrl(file) {
   const img = await loadImage(file);

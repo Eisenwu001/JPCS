@@ -549,9 +549,7 @@ export async function pushToSheetsNow() {
   }
 }
 
-/** Call once at startup. Auto-pushes (debounced) whenever the local
- * ledger changes — but only once connected and a spreadsheet is set,
- * so this is a silent no-op for everyone who hasn't opted in. */
+/** Initialize auto sync to Google Sheets on data changes. */
 export function initAutoSync() {
   unsubscribeData?.();
   unsubscribeData = store.subscribe("data", () => {

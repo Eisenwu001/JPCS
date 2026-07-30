@@ -1,17 +1,15 @@
 // js/events.js
 import { store } from "./store.js";
-import { getData, addEvent, deleteEvent, toggleParticipantPaid, setEventSlug, setEventActive as setEventActiveLocal, addTransaction, findBestMemberMatch, markParticipantPaidFromSubmission, addMember } from "./data.js";
+import { getData, addEvent, deleteEvent, toggleParticipantPaid, setEventSlug, setEventActive as setEventActiveLocal, addTransaction, findBestMemberMatch, markParticipantPaidFromSubmission, addMember, updateMember } from "./data.js";
 import { formatMoney, formatDate, pesosToCentavos } from "./utils.js";
 import { openModal, closeModal, confirmAction, showToast } from "./ui.js";
 import { generateUniqueSlug, publishEvent, setEventActive as setEventActiveRemote, subscribeToSubmissions, updateSubmissionStatus } from "./cloud.js";
 import { compressImageToDataUrl } from "./image.js";
 
-// Tracks live Firestore listeners so they get torn down and replaced
-// cleanly on every re-render, instead of silently piling up — see the
-// note above renderEvents() for why this matters.
+// Tracks live Firestore listeners
 const activeSubscriptions = new Map();
 
-// In-memory cache of event submissions so counts and the management modal can read from it
+// In-memory cache of event submissions
 const eventSubmissionsCache = new Map();
 
 // Managed event state
@@ -23,7 +21,7 @@ let managePage = 1;
 const ITEMS_PER_PAGE = 8;
 
 function publicUrlFor(slug) {
-  return `${location.origin}${location.pathname.replace(/index\.html$/, "")}event.html?slug=${slug}`;
+  return `${location.origin}/event/${slug}`;
 }
 
 export function renderEvents() {
@@ -31,9 +29,7 @@ export function renderEvents() {
   const sectionEl = document.querySelector('section[data-route="#/events"]');
   const data = getData();
 
-  // Every call to renderEvents() rebuilds the DOM for all event cards —
-  // any Firestore listeners attached to the previous DOM are now
-  // pointing at detached nodes. Tear them all down before rebuilding.
+  // Clean up previous listeners
   activeSubscriptions.forEach((unsub) => unsub());
   activeSubscriptions.clear();
 
@@ -150,9 +146,7 @@ export function renderEvents() {
     })
   );
 
-  // Wire a live submissions subscription for every published event —
-  // updates just that event's table directly, no full re-render, so
-  // approving one submission doesn't disrupt anything else on screen.
+  // Subscribe to live submissions for published events
   data.events.forEach((event) => {
     if (!event.slug) return;
     const unsub = subscribeToSubmissions(event.slug, (submissions) => {
@@ -345,6 +339,12 @@ function renderSubmissionsManagement(event, submissions) {
               
               <div>
                 <h4 style="margin:0 0 4px; font-size:15px; font-weight:700;">${s.name}</h4>
+                ${s.course || s.yearLevel ? `
+                  <p style="margin:0 0 4px; font-size:12px; color:var(--color-accent-hover); font-weight:600; display:flex; align-items:center; gap:4px;">
+                    <i data-lucide="graduation-cap" style="width:13px; height:13px;"></i>
+                    ${[s.course, s.yearLevel].filter(Boolean).join(" · ")}
+                  </p>
+                ` : ""}
                 <p style="margin:0; font-size:12.5px; color:var(--color-text-secondary); display:flex; align-items:center; gap:8px;">
                   <span style="display:inline-flex; align-items:center; gap:4px; text-transform:capitalize;"><i data-lucide="${s.paymentMethod === 'gcash' ? 'smartphone' : 'banknote'}" style="width:12px; height:12px;"></i>${s.paymentMethod}</span>
                   · <span>${submissionTime}</span>
@@ -431,6 +431,7 @@ function renderSubmissionsManagement(event, submissions) {
     btn.addEventListener("click", async () => {
       btn.disabled = true;
       const subId = btn.dataset.subId;
+      const sub = submissions.find((item) => item.id === subId) || {};
       const select = contentEl.querySelector(`.member-match-select[data-sub-id="${subId}"]`);
       const matchedMemberId = select?.value || null;
       let matchedMember = matchedMemberId ? getData().members.find((m) => m.id === matchedMemberId) : null;
@@ -446,21 +447,34 @@ function renderSubmissionsManagement(event, submissions) {
         note: `Payment from ${btn.dataset.name} (via public link)`,
       });
 
+      const isMembership = event.category === "membership_fee" ||
+        event.slug?.includes("membership") ||
+        event.title?.toLowerCase().includes("membership");
+
+      const subCourse = sub.course || "—";
+      const subYearLevel = sub.yearLevel || "—";
+
       // Implement Category-specific behaviors
-      if (event.category === "membership_fee") {
+      if (isMembership) {
         if (!matchedMember) {
-          // AUTOMATICALLY CREATE NEW MEMBER
+          // AUTOMATICALLY CREATE NEW MEMBER WITH COURSE & YEAR LEVEL
           matchedMember = addMember({
             name: btn.dataset.name,
-            course: "—",
-            yearLevel: "—",
+            course: subCourse,
+            yearLevel: subYearLevel,
             contact: "—",
             officerRole: "",
           });
           markParticipantPaidFromSubmission(event.id, matchedMember.id);
-          showToast(`Created new Member record and marked paid for ${matchedMember.name}`, "success");
+          showToast(`Created new Member record for ${matchedMember.name} (${subCourse} ${subYearLevel})`, "success");
         } else {
-          // Use matched existing member
+          // Use matched existing member & update details if provided
+          if ((subCourse && subCourse !== "—") || (subYearLevel && subYearLevel !== "—")) {
+            updateMember(matchedMember.id, {
+              ...(subCourse && subCourse !== "—" ? { course: subCourse } : {}),
+              ...(subYearLevel && subYearLevel !== "—" ? { yearLevel: subYearLevel } : {}),
+            });
+          }
           markParticipantPaidFromSubmission(event.id, matchedMember.id);
           showToast(`Marked existing member ${matchedMember.name} as paid`, "success");
         }

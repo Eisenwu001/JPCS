@@ -11,7 +11,7 @@ let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let selectedDateStr = new Date().toISOString().slice(0, 10);
 
-// Helper to calculate relative date statuses cleanly (no emoji)
+// Helper to calculate relative date statuses
 function getFriendlyDateStatus(startDateStr, endDateStr, status) {
   if (!startDateStr && !endDateStr) return "No dates set";
 

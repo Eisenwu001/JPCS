@@ -67,6 +67,14 @@ body {
   margin-bottom: 20px;
 }
 
+.public-fee-badge svg,
+.public-fee-badge i {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex-shrink: 0;
+}
+
 .payment-method-options {
   display: flex;
   gap: 10px;
@@ -79,12 +87,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: var(--space-3);
+  padding: 12px 14px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
+  line-height: 1;
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
@@ -97,9 +106,12 @@ body {
   background: rgba(16, 185, 129, 0.06);
 }
 
+.payment-method-option svg,
 .payment-method-option i {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex-shrink: 0;
 }
 
 .file-upload-zone {

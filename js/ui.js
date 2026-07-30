@@ -50,9 +50,7 @@ export function closeModal(overlayEl) {
   overlayEl?.classList.remove("open");
 }
 
-/** Lightweight confirm dialog — used before delete actions, per the
- * original spec's "confirmation dialogs before deleting records"
- * requirement. Returns a Promise<boolean>. */
+/** Confirm dialog returning a Promise<boolean>. */
 export function confirmAction(message) {
   return new Promise((resolve) => {
     const overlay = document.querySelector(".confirm-modal-overlay");

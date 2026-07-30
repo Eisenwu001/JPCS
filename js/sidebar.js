@@ -1,26 +1,13 @@
 // js/sidebar.js
-// Two different behaviors, picked by screen width, not one compromise:
-
 import { auth } from "./firebase.js";
 import { openPasswordModal, handleSignOut } from "./auth.js";
 import { store } from "./store.js";
 import { confirmAction } from "./ui.js";
-//   - Desktop/tablet: the sidebar is a persistent icon rail, expandable
-//     to full width via the chevron in its header. Your choice is
-//     remembered across visits.
-//   - Mobile: unchanged from before — hidden off-canvas, opened via the
-//     hamburger as a full overlay with a dimmed backdrop.
 
 const STORAGE_KEY_THEME = "jpcs-theme";
 const STORAGE_KEY_RAIL = "jpcs-sidebar-expanded";
 const MOBILE_QUERY = "(max-width: 768px)";
 
-// Lucide replaces <i data-lucide="x"> with an <svg> on first render, so
-// a later `.querySelector("i")` to swap the icon finds nothing and
-// silently no-ops — this was quietly broken for the theme toggle before
-// (the moon never became a sun after the first click). Rebuilding a
-// fresh <i> tag and letting Lucide convert it again sidesteps that,
-// regardless of which tag currently sits in the button.
 function setIcon(container, iconName) {
   if (!container) return;
   container.innerHTML = `<i data-lucide="${iconName}"></i>`;
@@ -77,9 +64,7 @@ export function initSidebar() {
     localStorage.setItem(STORAGE_KEY_RAIL, expanded ? "true" : "false");
   }
 
-  // Default collapsed (rail-only) unless the visitor has expanded it
-  // before — matches the "minimal by default" spirit of the original
-  // hidden-sidebar request, while still keeping icons visible always.
+  // Default rail state
   setRailExpanded(localStorage.getItem(STORAGE_KEY_RAIL) === "true");
 
   railToggle?.addEventListener("click", () => {
@@ -104,9 +89,6 @@ export function initSidebar() {
       navItems.forEach((el) => el.classList.remove("active"));
       item.classList.add("active");
       moveIndicatorTo(item);
-      // Only the mobile drawer is meant to close on navigation — the
-      // desktop rail is a persistent fixture, closing it on every click
-      // would undo the point of it being always there.
       if (isMobile()) closeMobileDrawer();
     });
   });
