@@ -1,17 +1,4 @@
 // js/data.js
-//
-// Single source of truth for all app data. Everything lives in
-// localStorage under one key — this is deliberate: it means the whole
-// dataset is one atomic read/write, and swapping this file's internals
-// for Firestore later (multi-device sync) doesn't require touching any
-// UI module, since they only ever call these exported functions.
-//
-// BALANCE PRINCIPLE (carried over from the original architecture plan):
-// there is no raw mutable "balance" field. Balance is always derived
-// from startingBalanceCentavos + the transaction ledger. "Edit Balance"
-// in the UI doesn't overwrite a number — it back-solves the starting
-// balance so the derived total matches what the admin typed, which
-// keeps every peso traceable to a transaction.
 
 import { store } from "./store.js";
 import { computeDelta } from "./utils.js";
