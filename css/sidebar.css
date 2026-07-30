@@ -1,11 +1,4 @@
-/* css/sidebar.css
-   Two genuinely different behaviors depending on screen width, not one
-   pattern stretched to fit both:
-   - Desktop/tablet (min-width: 769px): a persistent icon rail, expandable
-     to full width via the chevron in its header. Never fully hides.
-   - Mobile (max-width: 768px): the original hidden overlay drawer,
-     off-canvas by default, slides in over a dimmed backdrop when the
-     hamburger is tapped. Untouched from before, on purpose. */
+/* css/sidebar.css */
 
 .sidebar {
   position: fixed;
