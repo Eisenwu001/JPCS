@@ -1,24 +1,14 @@
-/* css/style.css
-   Design tokens as CSS custom properties. Every other stylesheet
-   (sidebar.css, dashboard.css, forms.css, tables.css) references these
-   variables instead of hardcoding colors. That's what makes dark mode
-   a single attribute toggle instead of a duplicate stylesheet. */
+/* css/style.css */
 
 :root {
-  /* Brand — JPCS orange. Income/expense stay green/red on purpose: those
-     are load-bearing financial conventions (green = money in, red = money
-     out), not brand decoration, so they're deliberately left alone even
-     though orange sits close to red on the wheel. */
+  /* Brand — JPCS orange (green = money in, red = money
+     out). */
   --color-accent: #ea580c;
   --color-accent-hover: #c2410c;
   --color-accent-soft: #fff1e6;
   --color-income: #16a34a;
   --color-expense: #dc2626;
   --color-info: #2563eb;
-
-  /* Neutrals, light mode — warmed from the original cool blue-gray
-     (#f7f8fa, #6b7280) to ivory/stone tones so the "orange and white"
-     feeling lives in the whole page, not just wherever a button sits. */
   --color-bg: #faf6f2;
   --color-surface: #ffffff;
   --color-border: #ece3da;
@@ -26,12 +16,11 @@
   --color-text-primary: #1c1917;
   --color-text-secondary: #78716c;
   --color-text-tertiary: #a8a29e;
-  --color-sidebar-bg: #26201b;   /* warm espresso, replacing the old cool slate */
+  --color-sidebar-bg: #26201b;  
   --color-sidebar-text: #cbbfb2;
   --color-sidebar-active: #ea580c;
 
-  /* Elevation. Layered shadows read less flat on light surfaces than a
-     single value, which matters most on the hero card and modals. */
+  /* Elevation. Layered shadow */
   --shadow-xs: 0 1px 2px rgba(38, 32, 27, 0.05);
   --shadow-sm: 0 1px 2px rgba(38, 32, 27, 0.05), 0 1px 1px rgba(38, 32, 27, 0.04);
   --shadow-md: 0 8px 20px -4px rgba(38, 32, 27, 0.1), 0 2px 6px rgba(38, 32, 27, 0.05);
@@ -51,10 +40,6 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  /* Type. Sora carries headings and hero figures (geometric, a little
-     more character), Inter carries body, labels, and table data with
-     tabular numerals so peso columns align. That detail matters more
-     than it sounds like it would in a finance UI. */
   --font-display: "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
@@ -78,9 +63,6 @@
   --color-text-secondary: #a89e93;
   --color-sidebar-bg: #14100d;
   --color-sidebar-text: #a89e93;
-  /* Deep orange reads muddy on a dark surface, so dark mode gets a
-     brighter, slightly desaturated orange instead of the light mode's
-     value, same hue family, tuned for contrast rather than reused as-is. */
   --color-accent: #fb923c;
   --color-accent-hover: #f97316;
   --color-accent-soft: #3a2a1c;
