@@ -6,9 +6,11 @@ import { formatMoney, formatDate, pesosToCentavos } from "./utils.js";
 const STORAGE_KEY = "jpcs_my_submissions";
 
 function getSlugFromUrl() {
+  const querySlug = new URLSearchParams(location.search).get("slug");
+  if (querySlug) return querySlug;
   const pathMatch = location.pathname.match(/\/event\/([a-z0-9-]+)/i);
   if (pathMatch) return pathMatch[1];
-  return new URLSearchParams(location.search).get("slug");
+  return null;
 }
 
 function getMySubmissions() {
@@ -32,15 +34,6 @@ async function init() {
   if (!slug) {
     renderError(card, "No event specified. Check the link and try again.");
     return;
-  }
-
-  // Clean up URL in address bar if it contains query parameters or event.html
-  if (slug && location.pathname !== `/event/${slug}`) {
-    try {
-      history.replaceState(null, "", `/event/${slug}`);
-    } catch (e) {
-      // Fallback silently if history API isn't allowed in iframe sandbox
-    }
   }
 
   let event;
