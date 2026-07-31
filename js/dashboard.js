@@ -589,6 +589,7 @@ function getCollectionRate() {
   let paidDues = 0;
 
   for (const event of events) {
+    if (event.category !== "officer_collection") continue;
     const fee = event.feeCentavos || 0;
     const participants = event.participants || [];
     for (const p of participants) {
