@@ -175,10 +175,6 @@ function load() {
 let state = load();
 let cloudSyncReady = false; // flips true after the first Firestore snapshot is reconciled — see initCloudLedgerSync()
 
-// Loaded from localStorage first (instant paint, works offline), then
-// reconciled with Firestore the moment the first snapshot arrives —
-// see initCloudLedgerSync() below. This is what makes "open the app
-// on a different device" actually show real data instead of nothing.
 let cloudWriteTimer = null;
 const CLOUD_WRITE_DEBOUNCE_MS = 1200;
 
@@ -198,8 +194,7 @@ function scheduleCloudWrite() {
   }, CLOUD_WRITE_DEBOUNCE_MS);
 }
 
-// Publish once on load so modules that mount before any mutation still
-// get the initial dataset via store.subscribe.
+
 store.set("data", state);
 
 const LEDGER_DOC_PATH = ["ledger", "main"];
@@ -213,10 +208,6 @@ export function initCloudLedgerSync() {
   const ledgerRef = doc(db, ...LEDGER_DOC_PATH);
 
   onSnapshot(ledgerRef, (snap) => {
-    // hasPendingWrites means this snapshot is just our own optimistic
-    // write echoing back before the server's confirmed it — local
-    // state already reflects that change, so re-applying it here would
-    // only risk clobbering a newer edit made in the meantime.
     if (snap.metadata.hasPendingWrites) {
       cloudSyncReady = true;
       return;
@@ -229,9 +220,6 @@ export function initCloudLedgerSync() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       store.set("data", state);
     } else {
-      // Nobody has ever synced before — seed the cloud from whatever's
-      // currently local (including anything edited before this
-      // resolved) instead of overwriting it with nothing.
       setDoc(ledgerRef, state).catch((err) => console.error("Couldn't create the initial cloud ledger:", err));
     }
     cloudSyncReady = true;
@@ -265,6 +253,7 @@ export function computeBalanceCentavos() {
 export function computePendingCollectionsCentavos() {
   let pending = 0;
   for (const event of state.events) {
+    if (event.category !== "officer_collection") continue;
     for (const p of event.participants) {
       if (!p.paid) pending += event.feeCentavos;
     }
@@ -332,12 +321,6 @@ export function getMonthlyIncomeVsExpense(monthsBack = 6) {
   for (let i = monthsBack - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     buckets.push({
-      // Built from local date parts rather than d.toISOString(), which
-      // converts to UTC first. In any timezone ahead of UTC (Philippines
-      // is UTC+8), that conversion rolls local midnight back into the
-      // previous UTC day, silently shifting every bucket's key one
-      // month earlier than the label sitting next to it. That mismatch
-      // is why a transaction dated Jun 21 was landing under "Jul".
       key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
       label: d.toLocaleDateString("en-US", { month: "short" }),
       income: 0,
@@ -349,10 +332,6 @@ export function getMonthlyIncomeVsExpense(monthsBack = 6) {
     if (bucket) bucket[t.type] += t.amount;
   }
 
-  // Trim leading months with no activity so a young org's chart doesn't
-  // stretch across a mostly blank grid. Starts one bucket before the
-  // first real activity so there's still a baseline to compare against,
-  // and falls back to the last two months if there's no history yet.
   let firstActive = buckets.findIndex((b) => b.income > 0 || b.expense > 0);
   if (firstActive === -1) firstActive = buckets.length - 1;
   const start = Math.max(0, firstActive - 1);
@@ -391,6 +370,7 @@ export function getDailyIncomeVsExpense(year, month) {
 export function getMemberOutstandingCentavos(memberId) {
   let total = 0;
   for (const event of state.events) {
+    if (event.category !== "officer_collection") continue;
     const p = event.participants.find((p) => p.memberId === memberId);
     if (p && !p.paid) total += event.feeCentavos;
   }
@@ -490,7 +470,7 @@ export function deleteMember(id) {
 }
 
 export function addEvent({ title, date, feeCentavos, description, slug = null, category = "general", qrCodeDataUrl = null }) {
-  const participants = state.members.map((m) => ({ memberId: m.id, paid: false }));
+  const participants = category === "officer_collection" ? state.members.map((m) => ({ memberId: m.id, paid: false })) : [];
   const event = { id: uid(), title, date, feeCentavos, description, participants, slug, active: true, category, qrCodeDataUrl };
   state.events.push(event);
   persist();
