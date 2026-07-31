@@ -21,8 +21,11 @@ let managePage = 1;
 const ITEMS_PER_PAGE = 8;
 
 function publicUrlFor(slug) {
-  const base = location.origin + location.pathname.replace(/index\.html$/, "").replace(/\/$/, "");
-  return `${base}/event.html?slug=${slug}`;
+  // If running on Vercel or production host, prefer the dedicated public payment subdomain
+  if (location.hostname.includes("vercel.app") || location.hostname.includes("jpcs")) {
+    return `https://jpcs-pay.vercel.app/event/${slug}`;
+  }
+  return `${location.origin}/event/${slug}`;
 }
 
 export function renderEvents() {
