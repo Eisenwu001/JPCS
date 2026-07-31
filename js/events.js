@@ -180,11 +180,8 @@ function renderEventCard(event, data, isAdmin) {
   const paidCount = event.participants.filter((p) => p.paid).length;
   const total = event.participants.length;
 
-  const isMembership = event.category === "membership_fee" ||
-    event.slug?.includes("membership") ||
-    event.title?.toLowerCase().includes("membership");
-
-  const paidCountDisplay = isMembership ? `${paidCount} Paid` : `${paidCount} / ${total} Paid`;
+  const isOfficerCollection = event.category === "officer_collection";
+  const paidCountDisplay = isOfficerCollection ? `${paidCount} / ${total} Paid` : `${paidCount} Paid`;
 
   // Pretty category label
   let categoryLabel = "General Event";
