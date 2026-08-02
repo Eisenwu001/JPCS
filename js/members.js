@@ -1,7 +1,7 @@
 // js/members.js
 import { store } from "./store.js";
-import { getData, addMember, updateMember, deleteMember, getMemberOutstandingCentavos } from "./data.js";
-import { formatMoney } from "./utils.js";
+import { getData, addMember, updateMember, deleteMember, getMemberOutstandingCentavos, setParticipantPaidAmount } from "./data.js";
+import { formatMoney, pesosToCentavos, formatDate } from "./utils.js";
 import { openModal, closeModal, confirmAction, showToast } from "./ui.js";
 
 let editingMemberId = null;
@@ -165,10 +165,13 @@ export function renderMembers() {
                   <td>${m.yearLevel || "—"}</td>
                   <td>${m.contact || "—"}</td>
                   <td class="amount-cell ${outstanding > 0 ? "text-expense" : "text-income"}">
-                    ${outstanding > 0 ? formatMoney(outstanding) : "Paid up"}
+                    <button class="dues-btn" data-id="${m.id}" style="background:transparent; border:none; color:inherit; font:inherit; cursor:pointer; font-weight:600; text-decoration:underline; text-decoration-style:dotted;" title="Click to view dues or edit payments">
+                      ${outstanding > 0 ? formatMoney(outstanding) : "Paid up"}
+                    </button>
                   </td>
                   ${isAdmin ? `
                   <td style="white-space:nowrap;">
+                    <button class="icon-btn edit-dues-btn" data-id="${m.id}" aria-label="Manage Dues" title="Manage Dues & Payments"><i data-lucide="receipt"></i></button>
                     <button class="icon-btn edit-member-btn" data-id="${m.id}" aria-label="Edit"><i data-lucide="pencil"></i></button>
                     <button class="icon-btn delete-member-btn" data-id="${m.id}" aria-label="Delete"><i data-lucide="trash-2"></i></button>
                   </td>` : ""}
@@ -195,6 +198,11 @@ export function renderMembers() {
     }
   }
 
+  // Dues / payments modal button handlers (available to all or admin)
+  sectionEl.querySelectorAll(".dues-btn, .edit-dues-btn").forEach((btn) => {
+    btn.addEventListener("click", () => openMemberDuesModal(btn.dataset.id));
+  });
+
   if (!isAdmin) return;
 
   document.getElementById("addMemberBtn")?.addEventListener("click", () => openMemberModal());
@@ -210,6 +218,120 @@ export function renderMembers() {
       }
     })
   );
+}
+
+function openMemberDuesModal(memberId) {
+  const data = getData();
+  const member = data.members.find((m) => m.id === memberId);
+  if (!member) return;
+
+  const isAdmin = store.get("isAdmin");
+  const overlay = document.querySelector(".member-dues-modal-overlay");
+  if (!overlay) return;
+
+  overlay.querySelector("#memberDuesTitle").textContent = `${member.name}'s Dues & Payments`;
+  overlay.querySelector("#memberDuesSubtitle").textContent = `${member.course || "Member"} ${member.yearLevel ? "· " + member.yearLevel : ""} ${member.officerRole ? "· " + member.officerRole : ""}`;
+
+  const listEl = overlay.querySelector("#memberDuesList");
+
+  const isOfficer = !!(member.officerRole && member.officerRole.trim() !== "");
+
+  // Collect relevant events/collections
+  const relevantEvents = data.events.filter((e) => {
+    if (e.category === "membership_fee") return !isOfficer;
+    if (e.category === "officer_collection") return isOfficer;
+    return e.participants?.some(p => p.memberId === memberId);
+  });
+
+  if (relevantEvents.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align:center; padding:32px 0; color:var(--color-text-secondary);">
+        <i data-lucide="check-circle" style="width:36px; height:36px; margin-bottom:8px; color:var(--color-income);"></i>
+        <p style="margin:0; font-weight:600;">No active dues or fees required for this member.</p>
+      </div>
+    `;
+  } else {
+    listEl.innerHTML = relevantEvents.map((event) => {
+      const p = event.participants?.find((part) => part.memberId === memberId);
+      const paidCentavos = p?.paidCentavos !== undefined ? p.paidCentavos : (p?.paid ? event.feeCentavos : 0);
+      const remainingCentavos = Math.max(0, event.feeCentavos - paidCentavos);
+
+      return `
+        <div class="card" style="background:var(--color-surface); border:1px solid var(--color-border); padding:16px; border-radius:var(--radius-md);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
+            <div>
+              <h4 style="margin:0 0 4px; font-size:15px; font-weight:700;">${event.title}</h4>
+              <p style="margin:0; font-size:12.5px; color:var(--color-text-secondary);">
+                Fee: <strong>${formatMoney(event.feeCentavos)}</strong> · Date: ${formatDate(event.date)}
+              </p>
+            </div>
+            <span class="status-badge ${remainingCentavos === 0 ? "income" : paidCentavos > 0 ? "warning" : "expense"}" style="font-size:12px; padding:4px 10px;">
+              ${remainingCentavos === 0 ? "Fully Paid" : paidCentavos > 0 ? `Partial (${formatMoney(paidCentavos)} paid)` : "Unpaid"}
+            </span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--color-border); margin-bottom:12px; font-size:13px;">
+            <div>
+              <span style="color:var(--color-text-secondary);">Paid:</span> <strong style="color:var(--color-income);">${formatMoney(paidCentavos)}</strong>
+            </div>
+            <div>
+              <span style="color:var(--color-text-secondary);">Remaining:</span> <strong style="${remainingCentavos > 0 ? "color:var(--color-expense);" : "color:var(--color-income);"}">${formatMoney(remainingCentavos)}</strong>
+            </div>
+          </div>
+
+          ${isAdmin ? `
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:160px;">
+                <span style="font-size:13px; font-weight:600; color:var(--color-text-secondary);">₱</span>
+                <input type="number" step="1" min="0" max="${(event.feeCentavos / 100)}" class="form-control paid-amount-input" data-event-id="${event.id}" value="${(paidCentavos / 100)}" style="height:36px; font-size:13px;" />
+              </div>
+              <button class="btn btn-primary save-paid-btn" data-event-id="${event.id}" data-fee-centavos="${event.feeCentavos}" style="padding:6px 14px; font-size:12.5px;">
+                Update Paid
+              </button>
+              ${remainingCentavos > 0 ? `
+                <button class="btn btn-secondary settle-full-btn" data-event-id="${event.id}" data-fee-centavos="${event.feeCentavos}" style="padding:6px 14px; font-size:12.5px; color:var(--color-income); border-color:rgba(22, 163, 74, 0.3);">
+                  Settle All (${formatMoney(remainingCentavos)})
+                </button>
+              ` : ""}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }).join("");
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+
+  openModal(overlay);
+
+  // Wire buttons inside dues modal
+  if (isAdmin) {
+    overlay.querySelectorAll(".save-paid-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const eventId = btn.dataset.eventId;
+        const input = overlay.querySelector(`.paid-amount-input[data-event-id="${eventId}"]`);
+        const valPesos = parseFloat(input.value) || 0;
+        const valCentavos = pesosToCentavos(valPesos);
+
+        setParticipantPaidAmount(eventId, memberId, valCentavos);
+        showToast(`Updated payment to ₱${valPesos.toFixed(2)}`, "success");
+        openMemberDuesModal(memberId);
+        renderMembers();
+      });
+    });
+
+    overlay.querySelectorAll(".settle-full-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const eventId = btn.dataset.eventId;
+        const fullCentavos = parseInt(btn.dataset.feeCentavos, 10);
+
+        setParticipantPaidAmount(eventId, memberId, fullCentavos);
+        showToast(`Settled in full (${formatMoney(fullCentavos)})`, "success");
+        openMemberDuesModal(memberId);
+        renderMembers();
+      });
+    });
+  }
 }
 
 function openMemberModal(memberId = null) {
@@ -230,6 +352,10 @@ function openMemberModal(memberId = null) {
 }
 
 export function initMemberModal() {
+  const duesOverlay = document.querySelector(".member-dues-modal-overlay");
+  duesOverlay?.querySelector(".modal-close-btn")?.addEventListener("click", () => closeModal(duesOverlay));
+  duesOverlay?.addEventListener("click", (e) => { if (e.target === duesOverlay) closeModal(duesOverlay); });
+
   const overlay = document.querySelector(".member-modal-overlay");
   overlay?.querySelector(".modal-close-btn")?.addEventListener("click", () => closeModal(overlay));
   overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeModal(overlay); });

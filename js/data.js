@@ -1,4 +1,5 @@
 // js/data.js
+// Data store and state management layer for app state, persistence, and Firestore sync.
 
 import { store } from "./store.js";
 import { computeDelta } from "./utils.js";
@@ -175,6 +176,10 @@ function load() {
 let state = load();
 let cloudSyncReady = false; // flips true after the first Firestore snapshot is reconciled — see initCloudLedgerSync()
 
+// Loaded from localStorage first (instant paint, works offline), then
+// reconciled with Firestore the moment the first snapshot arrives —
+// see initCloudLedgerSync() below. This is what makes "open the app
+// on a different device" actually show real data instead of nothing.
 let cloudWriteTimer = null;
 const CLOUD_WRITE_DEBOUNCE_MS = 1200;
 
@@ -194,7 +199,8 @@ function scheduleCloudWrite() {
   }, CLOUD_WRITE_DEBOUNCE_MS);
 }
 
-
+// Publish once on load so modules that mount before any mutation still
+// get the initial dataset via store.subscribe.
 store.set("data", state);
 
 const LEDGER_DOC_PATH = ["ledger", "main"];
@@ -208,6 +214,10 @@ export function initCloudLedgerSync() {
   const ledgerRef = doc(db, ...LEDGER_DOC_PATH);
 
   onSnapshot(ledgerRef, (snap) => {
+    // hasPendingWrites means this snapshot is just our own optimistic
+    // write echoing back before the server's confirmed it — local
+    // state already reflects that change, so re-applying it here would
+    // only risk clobbering a newer edit made in the meantime.
     if (snap.metadata.hasPendingWrites) {
       cloudSyncReady = true;
       return;
@@ -220,6 +230,9 @@ export function initCloudLedgerSync() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       store.set("data", state);
     } else {
+      // Nobody has ever synced before — seed the cloud from whatever's
+      // currently local (including anything edited before this
+      // resolved) instead of overwriting it with nothing.
       setDoc(ledgerRef, state).catch((err) => console.error("Couldn't create the initial cloud ledger:", err));
     }
     cloudSyncReady = true;
@@ -253,9 +266,15 @@ export function computeBalanceCentavos() {
 export function computePendingCollectionsCentavos() {
   let pending = 0;
   for (const event of state.events) {
-    if (event.category !== "officer_collection") continue;
+    if (event.category !== "officer_collection" && event.category !== "membership_fee") continue;
     for (const p of event.participants) {
-      if (!p.paid) pending += event.feeCentavos;
+      const member = state.members.find((m) => m.id === p.memberId);
+      const isOfficer = !!(member?.officerRole && member.officerRole.trim() !== "");
+      if (event.category === "membership_fee" && isOfficer) continue;
+      if (event.category === "officer_collection" && !isOfficer) continue;
+
+      const paid = p.paidCentavos !== undefined ? p.paidCentavos : (p.paid ? event.feeCentavos : 0);
+      pending += Math.max(0, event.feeCentavos - paid);
     }
   }
   return pending;
@@ -321,6 +340,12 @@ export function getMonthlyIncomeVsExpense(monthsBack = 6) {
   for (let i = monthsBack - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     buckets.push({
+      // Built from local date parts rather than d.toISOString(), which
+      // converts to UTC first. In any timezone ahead of UTC (Philippines
+      // is UTC+8), that conversion rolls local midnight back into the
+      // previous UTC day, silently shifting every bucket's key one
+      // month earlier than the label sitting next to it. That mismatch
+      // is why a transaction dated Jun 21 was landing under "Jul".
       key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
       label: d.toLocaleDateString("en-US", { month: "short" }),
       income: 0,
@@ -332,6 +357,10 @@ export function getMonthlyIncomeVsExpense(monthsBack = 6) {
     if (bucket) bucket[t.type] += t.amount;
   }
 
+  // Trim leading months with no activity so a young org's chart doesn't
+  // stretch across a mostly blank grid. Starts one bucket before the
+  // first real activity so there's still a baseline to compare against,
+  // and falls back to the last two months if there's no history yet.
   let firstActive = buckets.findIndex((b) => b.income > 0 || b.expense > 0);
   if (firstActive === -1) firstActive = buckets.length - 1;
   const start = Math.max(0, firstActive - 1);
@@ -368,11 +397,19 @@ export function getDailyIncomeVsExpense(year, month) {
 }
 
 export function getMemberOutstandingCentavos(memberId) {
+  const member = state.members.find((m) => m.id === memberId);
+  const isOfficer = !!(member?.officerRole && member.officerRole.trim() !== "");
   let total = 0;
   for (const event of state.events) {
-    if (event.category !== "officer_collection") continue;
-    const p = event.participants.find((p) => p.memberId === memberId);
-    if (p && !p.paid) total += event.feeCentavos;
+    if (event.category === "membership_fee" && isOfficer) continue;
+    if (event.category === "officer_collection" && !isOfficer) continue;
+    if (event.category !== "officer_collection" && event.category !== "membership_fee") continue;
+
+    const p = event.participants?.find((p) => p.memberId === memberId);
+    if (!p) continue;
+    const paidAmount = p.paidCentavos !== undefined ? p.paidCentavos : (p.paid ? event.feeCentavos : 0);
+    const due = Math.max(0, event.feeCentavos - paidAmount);
+    total += due;
   }
   return total;
 }
@@ -470,7 +507,16 @@ export function deleteMember(id) {
 }
 
 export function addEvent({ title, date, feeCentavos, description, slug = null, category = "general", qrCodeDataUrl = null }) {
-  const participants = category === "officer_collection" ? state.members.map((m) => ({ memberId: m.id, paid: false })) : [];
+  let participants = [];
+  if (category === "officer_collection") {
+    participants = state.members
+      .filter((m) => !!(m.officerRole && m.officerRole.trim() !== ""))
+      .map((m) => ({ memberId: m.id, paid: false, paidCentavos: 0 }));
+  } else if (category === "membership_fee") {
+    participants = state.members
+      .filter((m) => !(m.officerRole && m.officerRole.trim() !== ""))
+      .map((m) => ({ memberId: m.id, paid: false, paidCentavos: 0 }));
+  }
   const event = { id: uid(), title, date, feeCentavos, description, participants, slug, active: true, category, qrCodeDataUrl };
   state.events.push(event);
   persist();
@@ -495,34 +541,65 @@ export function deleteEvent(id) {
   persist();
 }
 
+/** Set custom paid amount in centavos for a participant (supports partial payment). */
+export function setParticipantPaidAmount(eventId, memberId, paidCentavos) {
+  const event = state.events.find((e) => e.id === eventId);
+  if (!event) return;
+  let participant = event.participants.find((p) => p.memberId === memberId);
+  if (!participant) {
+    participant = { memberId, paid: false, paidCentavos: 0 };
+    event.participants.push(participant);
+  }
+
+  participant.paidCentavos = Math.max(0, paidCentavos);
+  participant.paid = participant.paidCentavos >= event.feeCentavos;
+
+  // Update corresponding transaction in ledger
+  const member = state.members.find((m) => m.id === memberId);
+  let txn = state.transactions.find(
+    (t) => t.source === "event" && t.eventId === eventId && t.memberId === memberId
+  );
+
+  if (participant.paidCentavos > 0) {
+    if (txn) {
+      txn.amount = participant.paidCentavos;
+      txn.date = todayISO();
+    } else {
+      state.transactions.push({
+        id: uid(),
+        type: "income",
+        category: event.title,
+        amount: participant.paidCentavos,
+        date: todayISO(),
+        note: `Payment from ${member?.name || "Member"}`,
+        source: "event",
+        eventId,
+        memberId,
+      });
+    }
+  } else if (txn) {
+    state.transactions = state.transactions.filter((t) => t !== txn);
+  }
+
+  persist();
+}
+
 /** Toggle participant paid status and record transaction. */
 export function toggleParticipantPaid(eventId, memberId) {
   const event = state.events.find((e) => e.id === eventId);
   if (!event) return;
-  const participant = event.participants.find((p) => p.memberId === memberId);
-  if (!participant) return;
-
-  participant.paid = !participant.paid;
-
-  if (participant.paid) {
-    const member = state.members.find((m) => m.id === memberId);
-    state.transactions.push({
-      id: uid(),
-      type: "income",
-      category: event.title,
-      amount: event.feeCentavos,
-      date: todayISO(),
-      note: `Payment from ${member?.name || "Member"}`,
-      source: "event",
-      eventId,
-      memberId,
-    });
-  } else {
-    state.transactions = state.transactions.filter(
-      (t) => !(t.source === "event" && t.eventId === eventId && t.memberId === memberId)
-    );
+  let participant = event.participants.find((p) => p.memberId === memberId);
+  if (!participant) {
+    participant = { memberId, paid: false, paidCentavos: 0 };
+    event.participants.push(participant);
   }
-  persist();
+
+  const currentPaid = participant.paidCentavos !== undefined ? participant.paidCentavos : (participant.paid ? event.feeCentavos : 0);
+  if (currentPaid >= event.feeCentavos) {
+    setParticipantPaidAmount(eventId, memberId, 0);
+  } else {
+    setParticipantPaidAmount(eventId, memberId, event.feeCentavos);
+  }
 }
 
 export function addTransaction({ type, category, amount, date, note }) {

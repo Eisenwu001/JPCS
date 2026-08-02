@@ -1,0 +1,75 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Member {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  studentId   String
+  role        String   @default("student")
+  yearLevel   String?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+}
+
+model Event {
+  id              String   @id @default(uuid())
+  title           String
+  date            String
+  feeCentavos     Int      @default(0)
+  description     String?
+  category        String   @default("general") // general, membership_fee, officer_collection
+  slug            String   @unique
+  active          Boolean  @default(true)
+  qrCodeDataUrl   String?
+  createdAt       DateTime @default(now())
+  participants    Participant[]
+  submissions     Submission[]
+}
+
+model Participant {
+  id        String   @id @default(uuid())
+  eventId   String
+  memberId  String
+  paid      Boolean  @default(false)
+  paidAt    DateTime?
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id          String   @id @default(uuid())
+  eventId     String
+  memberName  String
+  studentId   String
+  email       String
+  method      String   // gcash, maya, bank, cash
+  referenceNo String
+  proofUrl    String?
+  status      String   @default("pending") // pending, approved, rejected
+  submittedAt DateTime @default(now())
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  date           String
+  title          String
+  amountCentavos Int
+  type           String   // income, expense
+  category       String
+  memberId       String?
+  notes          String?
+  referenceNo    String?
+  createdAt      DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}

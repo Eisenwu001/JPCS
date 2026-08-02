@@ -1,4 +1,5 @@
 // js/store.js
+// Simple reactive pub/sub event store for application state.
 
 const state = new Map();
 const listeners = new Map(); // key -> Set<callback>

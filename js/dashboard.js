@@ -34,6 +34,8 @@ export function renderDashboard() {
   renderRecentTransactions(getRecentTransactions());
   renderQuickActions(isAdmin);
 
+  document.getElementById("pendingCollectionsCard")?.addEventListener("click", () => openPendingBreakdownModal());
+
   if (window.lucide) window.lucide.createIcons();
   return null;
 }
@@ -749,6 +751,151 @@ function renderQuickActions(isAdmin) {
   document.getElementById("qaAddEvent")?.addEventListener("click", () => openModal(document.querySelector(".event-modal-overlay")));
   document.getElementById("qaAddTxn")?.addEventListener("click", () => openModal(document.querySelector(".txn-modal-overlay")));
   document.getElementById("qaAddMember")?.addEventListener("click", () => openModal(document.querySelector(".member-modal-overlay")));
+}
+
+export function openPendingBreakdownModal() {
+  const data = getData();
+  const overlay = document.querySelector(".pending-breakdown-modal-overlay");
+  if (!overlay) return;
+
+  const contentEl = overlay.querySelector("#pendingBreakdownContent");
+  if (!contentEl) return;
+
+  const events = data.events || [];
+  const members = data.members || [];
+
+  const pendingEvents = [];
+  let grandTotalPendingCentavos = 0;
+
+  for (const event of events) {
+    if (event.category !== "officer_collection" && event.category !== "membership_fee") continue;
+
+    const fee = event.feeCentavos || 0;
+    const unpaidList = [];
+    let eventPendingCentavos = 0;
+
+    for (const p of (event.participants || [])) {
+      const member = members.find((m) => m.id === p.memberId);
+      const isOfficer = !!(member?.officerRole && member.officerRole.trim() !== "");
+
+      if (event.category === "membership_fee" && isOfficer) continue;
+      if (event.category === "officer_collection" && !isOfficer) continue;
+
+      const paidCentavos = p.paidCentavos !== undefined ? p.paidCentavos : (p.paid ? fee : 0);
+      const remainingCentavos = Math.max(0, fee - paidCentavos);
+
+      if (remainingCentavos > 0) {
+        eventPendingCentavos += remainingCentavos;
+        unpaidList.push({
+          member,
+          paidCentavos,
+          remainingCentavos,
+        });
+      }
+    }
+
+    if (unpaidList.length > 0) {
+      grandTotalPendingCentavos += eventPendingCentavos;
+      pendingEvents.push({
+        event,
+        eventPendingCentavos,
+        unpaidList,
+      });
+    }
+  }
+
+  if (pendingEvents.length === 0) {
+    contentEl.innerHTML = `
+      <div style="text-align:center; padding:48px 16px; color:var(--color-text-secondary);">
+        <i data-lucide="check-circle" style="width:48px; height:48px; margin-bottom:12px; color:var(--color-income);"></i>
+        <h4 style="margin:0 0 6px; font-size:16px; font-weight:700; color:var(--color-text-primary);">All Collections Settled!</h4>
+        <p style="margin:0; font-size:13.5px;">There are currently no outstanding dues or pending unpaid balances.</p>
+      </div>
+    `;
+  } else {
+    contentEl.innerHTML = `
+      <div class="card" style="background:var(--color-surface); border:1px solid var(--color-border); padding:14px 18px; border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:11.5px; font-weight:700; text-transform:uppercase; color:var(--color-text-secondary); letter-spacing:0.05em;">Total Pending Collections</span>
+          <h3 style="margin:2px 0 0; font-size:22px; font-weight:800; color:var(--color-expense);">${formatMoney(grandTotalPendingCentavos)}</h3>
+        </div>
+        <span style="font-size:12.5px; color:var(--color-text-secondary); font-weight:600;">${pendingEvents.length} Active Collection${pendingEvents.length > 1 ? "s" : ""}</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        ${pendingEvents.map(({ event, eventPendingCentavos, unpaidList }, index) => `
+          <div class="card" style="background:var(--color-surface); border:1px solid var(--color-border); padding:16px; border-radius:var(--radius-md);">
+            <div class="event-collapse-header" data-event-id="${event.id}" style="display:flex; justify-content:space-between; align-items:flex-start; cursor:pointer; user-select:none;" title="Click to toggle member breakdown">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="status-badge ${event.category === "membership_fee" ? "income" : "warning"}" style="font-size:11px; padding:2px 8px;">
+                    ${event.category === "membership_fee" ? "Membership Fee" : "Officer Collection"}
+                  </span>
+                  <span style="font-size:12px; color:var(--color-text-tertiary); font-weight:600;">(${unpaidList.length} member${unpaidList.length > 1 ? "s" : ""})</span>
+                </div>
+                <h4 style="margin:4px 0 2px; font-size:15px; font-weight:700; display:flex; align-items:center; gap:6px;">
+                  <span>${event.title}</span>
+                  <i data-lucide="chevron-down" class="collapse-icon" style="width:16px; height:16px; color:var(--color-text-secondary); transition:transform 0.2s ease;"></i>
+                </h4>
+                <p style="margin:0; font-size:12.5px; color:var(--color-text-secondary);">
+                  Required Fee: <strong>${formatMoney(event.feeCentavos)}</strong> · Date: ${formatDate(event.date)}
+                </p>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:10.5px; color:var(--color-text-tertiary); text-transform:uppercase; font-weight:700;">Total Outstanding</span>
+                <p style="margin:2px 0 0; font-size:15px; font-weight:800; color:var(--color-expense);">${formatMoney(eventPendingCentavos)}</p>
+              </div>
+            </div>
+
+            <div class="event-collapse-body" id="event-body-${event.id}" style="display:flex; flex-direction:column; gap:8px; margin-top:12px; border-top:1px solid var(--color-border); padding-top:12px;">
+              ${unpaidList.map(({ member, paidCentavos, remainingCentavos }) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.02); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--color-border); font-size:13px; flex-wrap:wrap; gap:8px;">
+                  <div>
+                    <strong style="color:var(--color-text-primary); font-size:13.5px;">${member?.name || "Unknown Member"}</strong>
+                    <div style="font-size:12px; color:var(--color-text-secondary); margin-top:1px;">
+                      ${member?.officerRole ? `<span style="font-weight:600; color:var(--color-accent);">${member.officerRole}</span> · ` : ""}${member?.course || "Member"} ${member?.yearLevel ? "· " + member.yearLevel : ""}
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="text-align:right; font-size:12.5px;">
+                      <span style="color:var(--color-text-secondary);">Paid:</span> <strong style="color:var(--color-income);">${formatMoney(paidCentavos)}</strong>
+                      <span style="margin:0 4px; color:var(--color-border);">|</span>
+                      <span style="color:var(--color-text-secondary);">Owe:</span> <strong style="color:var(--color-expense);">${formatMoney(remainingCentavos)}</strong>
+                    </div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+
+  // Wire collapse/expand toggles
+  contentEl.querySelectorAll(".event-collapse-header").forEach((header) => {
+    header.addEventListener("click", () => {
+      const eventId = header.dataset.eventId;
+      const body = contentEl.querySelector(`#event-body-${eventId}`);
+      const icon = header.querySelector(".collapse-icon");
+      if (!body) return;
+      const isHidden = body.style.display === "none";
+      body.style.display = isHidden ? "flex" : "none";
+      if (icon) {
+        icon.style.transform = isHidden ? "rotate(0deg)" : "rotate(-90deg)";
+      }
+    });
+  });
+
+  openModal(overlay);
+}
+
+export function initPendingBreakdownModal() {
+  const overlay = document.querySelector(".pending-breakdown-modal-overlay");
+  overlay?.querySelector(".modal-close-btn")?.addEventListener("click", () => closeModal(overlay));
+  overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeModal(overlay); });
 }
 
 export function initBalanceModal() {

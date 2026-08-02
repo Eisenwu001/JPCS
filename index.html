@@ -20,6 +20,10 @@
 <body>
 
 <div class="app-shell">
+
+  <!-- Fixed independently of .topbar so it isn't capped by the topbar's
+       own stacking context (position:sticky + z-index creates one).
+       It needs to render above the sidebar even while inside it visually. -->
   <button class="hamburger-btn" aria-label="Open menu">
     <i data-lucide="menu"></i>
   </button>
@@ -60,8 +64,8 @@
       <a href="#/tracker" class="nav-item" data-route="#/tracker" data-label="Tracker">
         <i data-lucide="check-square"></i><span>Tracker</span>
       </a>
-      <a href="#/calendar" class="nav-item" data-route="#/calendar" data-label="Academic Calendar">
-        <i data-lucide="calendar"></i><span>Academic Calendar</span>
+      <a href="#/calendar" class="nav-item" data-route="#/calendar" data-label="Calendar">
+        <i data-lucide="calendar"></i><span>Calendar</span>
       </a>
       <a href="#/settings" class="nav-item" data-route="#/settings" data-label="Settings">
         <i data-lucide="settings"></i><span>Settings</span>
@@ -128,10 +132,13 @@
             <div class="card-value tabular-nums text-expense" data-stat="today-expense">₱0.00</div>
             <div class="card-delta" data-delta="today-expense" style="display:none;"></div>
           </div>
-          <div class="card stat-card" style="display: flex; flex-direction: column;">
+          <div class="card stat-card" id="pendingCollectionsCard" style="display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease;" title="Click to view pending collections breakdown">
             <div class="stat-card-icon"><i data-lucide="hourglass"></i></div>
             <div class="card-label">Pending Collections</div>
             <div class="card-value tabular-nums text-info" data-stat="pending" style="margin-bottom: auto;">₱0.00</div>
+            <div style="font-size:11.5px; color:var(--color-text-tertiary); margin-top:4px; display:flex; align-items:center; gap:4px;">
+              <span>View breakdown</span> <i data-lucide="chevron-right" style="width:12px; height:12px;"></i>
+            </div>
             <div class="stat-progress-bar-wrap" id="collectionsProgressWrap" style="margin-top: 12px; display: none; padding-top: 8px; border-top: 1px dashed var(--color-border-strong);">
               <div class="stat-progress-bar-label" style="display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-secondary); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;">
                 <span>Collected Rate</span>
@@ -551,6 +558,38 @@
       <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
     </div>
     <img id="previewImage" style="width:100%; border-radius:var(--radius-sm); display:block;" alt="Proof of payment" />
+  </div>
+</div>
+
+<!-- ===== MEMBER DUES & PARTIAL PAYMENT MODAL ===== -->
+<div class="modal-overlay member-dues-modal-overlay">
+  <div class="modal" style="max-width:600px; width:95vw;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="memberDuesTitle">Member Dues & Payments</h3>
+        <p id="memberDuesSubtitle" style="margin:2px 0 0; font-size:13px; color:var(--color-text-secondary);"></p>
+      </div>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div id="memberDuesList" style="padding:16px 0; display:flex; flex-direction:column; gap:12px;">
+      <!-- Dynamically filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== PENDING COLLECTIONS BREAKDOWN MODAL ===== -->
+<div class="modal-overlay pending-breakdown-modal-overlay">
+  <div class="modal" style="max-width:680px; width:95vw; max-height:85vh; display:flex; flex-direction:column;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Pending Collections Breakdown</h3>
+        <p style="margin:2px 0 0; font-size:13px; color:var(--color-text-secondary);">Detailed breakdown of outstanding dues and pending payment collections</p>
+      </div>
+      <button class="modal-close-btn" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div id="pendingBreakdownContent" style="padding:16px 0; overflow-y:auto; display:flex; flex-direction:column; gap:16px; flex:1;">
+      <!-- Dynamically filled by JS -->
+    </div>
   </div>
 </div>
 

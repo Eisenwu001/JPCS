@@ -1,5 +1,4 @@
 import { initializeApp, getAuth, getFirestore } from "../assets/vendor/firebase.bundle.js";
-import appletConfig from "../firebase-applet-config.json";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVTnEFDldwK0do500CF_1T_SEglfl8tIc",

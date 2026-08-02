@@ -1,3 +1,5 @@
+// js/auth.js
+// Handles admin authentication (email/password & Google) and verifies admin permissions against Firestore.
 
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -22,7 +24,7 @@ export function initAdminGate() {
       }
     } catch (err) {
       store.set("isAdmin", false);
-      showModalError("Signed in, but couldn't verify admin access. Check that firestore.rules is published and Firestore is enabled. See browser console (F12) for details.");
+      showModalError("Signed in, but couldn't verify admin access. Check that firestore.rules is published and Firestore is enabled.");
       await signOut(auth);
     }
   });

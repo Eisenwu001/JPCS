@@ -1,7 +1,5 @@
 // js/ui.js
-// Small cross-cutting UI helpers shared by every module: toasts,
-// modal open/close
-// used by sections that aren't wired to Firebase yet.
+// Shared UI helper functions for toasts and modals.
 
 export function showToast(message, type = "info") {
   let container = document.querySelector(".toast-container");

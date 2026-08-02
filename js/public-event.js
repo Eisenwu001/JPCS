@@ -154,11 +154,11 @@ function renderForm(card, event) {
         <div class="payment-method-options">
           <label class="payment-method-option" data-method="gcash">
             <input type="radio" name="method" value="gcash" required />
-            <i data-lucide="smartphone"></i> GCash
+            <i data-lucide="smartphone"></i> <span>GCash</span>
           </label>
           <label class="payment-method-option" data-method="cash">
             <input type="radio" name="method" value="cash" />
-            <i data-lucide="banknote"></i> Cash / In Person
+            <i data-lucide="banknote"></i> <span>Cash / In Person</span>
           </label>
         </div>
       </div>

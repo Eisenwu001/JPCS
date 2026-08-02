@@ -1,10 +1,5 @@
 // js/router.js
-//
-// WHY: index.html hosts every module (Dashboard, Members, Transactions...)
-// as a single page — reloading the whole app on every sidebar click would
-// re-run Firebase auth checks and feel slow. A tiny hash router
-// (#/dashboard, #/members) swaps the visible <section> without a reload,
-// keeps the URL bookmarkable/shareable, and needs zero build tooling.
+// Client-side hash router for single-page navigation without full page reloads.
 
 const routes = new Map(); // "#/members" -> async render function
 let activeCleanup = null;

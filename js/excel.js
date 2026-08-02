@@ -1,1 +1,2 @@
-//Nothing to see here
+// js/excel.js
+// Optional helper module for Excel export/import capabilities.

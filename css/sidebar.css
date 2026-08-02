@@ -1,4 +1,11 @@
-/* css/sidebar.css */
+/* css/sidebar.css
+   Two genuinely different behaviors depending on screen width, not one
+   pattern stretched to fit both:
+   - Desktop/tablet (min-width: 769px): a persistent icon rail, expandable
+     to full width via the chevron in its header. Never fully hides.
+   - Mobile (max-width: 768px): the original hidden overlay drawer,
+     off-canvas by default, slides in over a dimmed backdrop when the
+     hamburger is tapped. Untouched from before, on purpose. */
 
 .sidebar {
   position: fixed;
@@ -107,6 +114,10 @@
   overflow-x: hidden;
 }
 
+/* Signature detail: a single pill that slides between nav items instead
+   of each item toggling its own background, closer to Linear's sidebar
+   than a plain :hover/.active swap. Left/right are edge-relative, so it
+   automatically fits both the rail and expanded widths with no JS. */
 .nav-indicator {
   position: absolute;
   top: 0;

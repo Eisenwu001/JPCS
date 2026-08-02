@@ -385,7 +385,7 @@ export function renderCalendar() {
           <div>
             <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px;">
               <i data-lucide="calendar" style="width: 22px; height: 22px; color: var(--color-accent);"></i>
-              Academic Calendar ${currentView === "academic-year" ? `(${currentYear})` : ""}
+              Calendar ${currentView === "academic-year" ? `(${currentYear})` : ""}
             </h2>
             <p style="color: var(--color-text-secondary); margin: 3px 0 0 0; font-size: 12.5px;">Click on any calendar day to place asynchronous highlights or manage active milestones.</p>
           </div>

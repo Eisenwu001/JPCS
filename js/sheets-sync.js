@@ -1,4 +1,5 @@
 // js/sheets-sync.js
+// Handles Google Sheets integration, OAuth authorization, and two-way sync for transactions and members.
 
 import { GoogleAuthProvider, signInWithPopup } from "../assets/vendor/firebase.bundle.js";
 import { sheetsAuthInstance as auth } from "./firebase.js";

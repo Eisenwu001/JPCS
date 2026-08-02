@@ -1,4 +1,5 @@
 // js/settings.js
+// Handles application settings, manual backup export/import, and Google Sheets sync configuration.
 
 import { store } from "./store.js";
 import { getData } from "./data.js";

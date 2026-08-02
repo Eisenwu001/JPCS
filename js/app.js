@@ -5,7 +5,7 @@ import { router } from "./router.js";
 import { store } from "./store.js";
 import { initSidebar, initThemeToggle, initSidebarFooter } from "./sidebar.js";
 import { initAdminGate } from "./auth.js";
-import { renderDashboard, initBalanceModal, initChartDetailModal, initCategoryToggle, initTimeframeToggle } from "./dashboard.js";
+import { renderDashboard, initBalanceModal, initChartDetailModal, initCategoryToggle, initTimeframeToggle, initPendingBreakdownModal } from "./dashboard.js";
 import { renderMembers, initMemberModal } from "./members.js";
 import { renderEvents, initEventModal, initManagePaymentsModal } from "./events.js";
 import { renderTransactions, initTransactionModal } from "./transactions.js";
@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initChartDetailModal();
   initCategoryToggle();
   initTimeframeToggle();
+  initPendingBreakdownModal();
   initAutoSync();
   initMemberModal();
   initEventModal();
